@@ -1,0 +1,27 @@
+{
+  "name": "flipdisc-ui",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/server.js",
+    "postinstall": "pip install pyzmq opencv-python mediapipe"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hono/node-server": "^1.10.0",
+    "@pixi/node": "^7.3.0",
+    "app-root-path": "^3.1.0",
+    "flipdisc": "file:../flipdisc",
+    "gsap": "^3.12.5",
+    "hono": "^4.2.1",
+    "matter-js": "^0.19.0",
+    "node-canvas-webgl": "^0.3.0",
+    "request-animation-frame-polyfill": "^1.1.2",
+    "three": "^0.162.0",
+    "zeromq": "^6.0.0-beta.19"
+  }
+}
