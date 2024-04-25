@@ -1,7 +1,9 @@
 import Scene from '../src/Scene.js';
 
-const title = 'Clock';
-const description = 'A simple clock widget that displays the current time.';
+const schema = {
+  title: 'Clock',
+  description: 'A simple clock widget that displays the current time.'
+}
 
 const clock = function() {
   const scene = new Scene({
@@ -20,4 +22,4 @@ const clock = function() {
   return scene;
 }
 
-export { clock as scene, title, description }
+export { clock as scene, schema }

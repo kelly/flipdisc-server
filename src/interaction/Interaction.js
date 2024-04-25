@@ -33,7 +33,7 @@ export default class InteractionEmitter extends EventEmitter {
         this._run(script);
       }
     });
-    process.on('exit', () => this.process.kill());
+    process.once('exit', () => this.process.kill());
   }
 
   async _subscribe(channel) {

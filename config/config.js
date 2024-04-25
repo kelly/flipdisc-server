@@ -23,7 +23,7 @@ display.devices = [{
 }]
 
 display.options = {
-  isMirrored: true,
+  isMirrored: true
 }
 
 export { display }

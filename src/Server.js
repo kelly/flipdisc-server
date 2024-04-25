@@ -1,19 +1,29 @@
 import { Hono } from 'hono'
 import { serve } from "@hono/node-server";
-import * as API from './api.js';
+import API from './api/index.js';
+import SceneManager from './SceneManager.js'
+import { startWebsocket } from './WebSocket.js';
 
+SceneManager.sharedInstance().loadLocal()
 const app = new Hono()
 const server = serve(app, (info) => {
-  console.log(`Listening on http://localhost:${info.port}`) // Listening on http://localhost:3000
+  console.log(`Listening on http://localhost:${info.port}`)
 })
+startWebsocket()
 
-app.get('/scenes', API.getScenes)
-app.get('/scenes/:id', API.getSceneByID)
-app.get('/display', API.getDisplay)
-app.post('/playing/next', API.postPlayingNext)
-app.post('/playing',  API.postPlaying)
-app.post('/playing/pause', API.postPlayingPause)
-app.post('/playing/resume', API.postPlayingResume)
+// scenes
+app.get('/api/scenes', API.getScenes)
+app.get('/api/scenes/:id', API.getSceneByID)
+
+// playing
+app.post('/api/playing/next', API.postPlayingNext)
+app.post('/api/playing',  API.postPlaying)
+app.post('/api/playing/pause', API.postPlayingPause)
+app.post('/api/playing/resume', API.postPlayingResume)
+app.post('/api/playing/toggle', API.postPlayingToggle)
+
+// display
+app.get('/api/display', API.getDisplay)
 
 
 export default app

@@ -1,17 +1,56 @@
 import Scene from '../src/Scene.js';
 import Matter from "matter-js";
 
-const title = "Matter";
-const description = "A simple matter.js widget that displays a bouncing ball.";
 
-const matter = function() {
+const defaults = {
+  maxBodies: 100,
+  friction: 0.1,
+  restitution: 0.9,
+  size: 5
+}
+
+const schema = {
+  title: 'Matter',
+  description: 'A physics simulation using matter.js.',
+  type: 'object',
+  properties: {
+    maxBodies: {
+      type: 'number',
+      default: defaults.maxBodies,
+      min: 1,
+      max: 1000
+    },
+    friction: {
+      type: 'number',
+      default: defaults.friction,
+      min: 0,
+      max: 1
+    },
+    restitution: {
+      type: 'number',
+      default: defaults.restitution,
+      min: 0,
+      max: 1
+    },
+    size: {
+      type: 'number',
+      default: defaults.size,
+      min: 1,
+      max: 100
+    }
+  }
+}
+
+const matter = function(options) {
+  options = { ...defaults, ...options };
+  const { maxBodies, friction, restitution, size } = options;
+
   const scene = new Scene()
   const bodies = [];
   const { Bodies } = Matter;
-  const maxBodies = 50;
   const ballOptions = {
-    restitution: 0.8,
-    friction: 0.5,
+    restitution,
+    friction,
     render: {
       fillStyle: "white",
     }
@@ -26,9 +65,9 @@ const matter = function() {
     scene.matter.add([boxA, boxB]);
   })
   scene.loop = (i) => {
-    const size = parseInt(Math.random() * 5) + 1;
+    const s = parseInt(Math.random() * size) + 1;
     if (i % 5 === 0) {
-      const circle = Bodies.circle(0, 0, size, { ...ballOptions, mass: 0.1 });
+      const circle = Bodies.circle(0, 0, s, { ...ballOptions, mass: 0.1 });
       bodies.push(circle)
       if (bodies.length > maxBodies) { 
         const old = bodies.shift();
@@ -40,4 +79,4 @@ const matter = function() {
   return scene;
 }
 
-export { matter as scene, title, description }
+export { matter as scene, schema }

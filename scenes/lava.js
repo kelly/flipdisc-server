@@ -2,10 +2,32 @@ import * as THREE from 'three';
 import Scene from '../src/Scene.js';
 import { MarchingCubes } from 'three/addons/objects/MarchingCubes.js'
 
-const title = 'Lava';
-const description = 'A lava lamp effect using three.js.';
 
-const lava = function() {
+const defaults = {
+  blobCount: 5
+}
+
+const schema = {
+  title: 'Lava',
+  description: 'A lava lamp effect using three.js.',
+  type: 'object',
+  properties: {
+    blobCount: {
+      type: 'integer',
+      title: 'Blob Count',
+      default: defaults.blobCount,
+      min: 1,
+      max: 30
+    }
+  }
+}
+
+let update;
+
+const lava = function(options) {
+  options = { ...defaults, ...options };
+  const { blobCount } = options;
+
   const scene = new Scene({
     loopInterval: 30,
   });
@@ -48,10 +70,10 @@ const lava = function() {
     const delta = clock.getDelta();
     time += delta * 1.0 * 0.5;
     scene.pixi.setText('Kelly', 0, 0, { fontName: 'Futura', fontSize: 28})
-    updateCubes(effect, time, 5);
+    updateCubes(effect, time, blobCount);
   }
 
   return scene;
 }
 
-export { lava as scene, title, description }
+export { lava as scene, schema }

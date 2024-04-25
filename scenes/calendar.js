@@ -1,8 +1,10 @@
 import Scene from '../src/Scene.js';
 import { Graphics } from '@pixi/node';
 
-const title = 'Calendar';
-const description = 'A simple calendar widget that displays the current time.';
+const schema = {
+  title: 'Calendar',
+  description: 'A simple calendar widget that displays the current time.',
+}
 
 const calendar = function() {
 
@@ -30,4 +32,4 @@ const calendar = function() {
   return scene;
 }
 
-export { calendar as scene, title, description }
+export { calendar as scene, schema }
