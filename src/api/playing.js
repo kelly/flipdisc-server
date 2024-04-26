@@ -1,44 +1,37 @@
 import SceneManager from '../SceneManager.js'
-const manager = SceneManager.sharedInstance();
 
 const postPlaying = async (c) => {
-  const { id } = c.body
-  const scene = manager.scenes[id]
-
-  if (!scene) {
+  const manager = SceneManager.sharedInstance();
+  const data = await c.req.json()
+  const id = data.id
+  if (!id) {
     return c.status(404).json({ error: 'scene not found' })
   }
-
-  manager.changeScene(scene);
-  scene.play()
-
-  c.json(scene)
+  await manager.setPlayingByIndex(id)
+  return c.json(manager.playing.info)
 }
 
 const postPlayingToggle = async (c) => {
+  const manager = SceneManager.sharedInstance();
   manager.playing.toggle()
-  c.status(200)
-}
-
-const postPlayingNext = async (c) => {
-  manager.nextScene()
-  c.json(manager.playing.schema)
-}
-
-const postPlayingPause = async (c) => {
-  manager.playing.stop()
-  c.status(200)
+  return c.json(manager.playing.info)
 }
 
 const postPlayingResume = async (c) => {
+  const manager = SceneManager.sharedInstance();
   manager.playing.resume()
-  c.status(200)
+  return c.status(200)
 }
 
+const postPlayingPause = async (c) => {
+  const manager = SceneManager.sharedInstance();
+  manager.playing.stop()
+  return c.status(200)
+}
+ 
 
 export {
   postPlaying,
-  postPlayingNext,
   postPlayingPause,
   postPlayingResume,
   postPlayingToggle

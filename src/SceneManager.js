@@ -3,7 +3,6 @@ import Display from './Display.js';
 import SceneImporter from './SceneImporter.js';
 import ScenePlaying from './ScenePlaying.js';
 
-const display = Display.sharedInstance()
 let manager;
 
 const defaults = {
@@ -38,21 +37,21 @@ export default class SceneManager {
     return this.scenes
   }  
 
-  nextScene() {
-    const idx = this.playingIndex
+  next() {
+    const idx = this.playing.schema.id
     const nextIdx = idx >= this.scenes.length - 1 ? 0 : idx + 1
     this.setPlayingByIndex(nextIdx)
   }
 
-  prevScene() {
-    const idx = this.playingIndex
+  previous() {
+    const idx = this.playing.schema.id
     const prevIdx = idx === 0 ? this.scenes.length - 1 : idx - 1
     this.setPlayingByIndex(prevIdx)
   }
 
-  setPlayingByIndex(idx) {
+  async setPlayingByIndex(idx) {
     if (idx => 0 && idx < this.scenes.length) {
-      this.setPlaying(this.scenes[idx])
+      await this.setPlaying(this.scenes[idx])
     }
   }
 
@@ -60,22 +59,19 @@ export default class SceneManager {
     return this.playing.set(scene)
   }
 
-  get playingIndex() {
-    return this.scenes.findIndex(s => s.schema === this.playing.schema)
-  }
-
   get isPlayingScene() {
     return this.playing.isPlaying
   }
 
   _registerEvents() {
+    const display = Display.sharedInstance()
     this.playing.on('update', (data) => {
       if (!data) return;
       isImageData(data) ? display.sendImageData(data) : display.send(data)
     })
     
     this.playing.on('finished', () => {
-      if (this.options.autoPlay) this.nextScene() 
+      if (this.options.autoPlay) this.next() 
     })
   }
 

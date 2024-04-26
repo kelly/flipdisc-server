@@ -1,7 +1,7 @@
 import Display from '../Display.js'
-const display = Display.sharedInstance()
 
 const getDisplay = async (c) => {
+  const display = Display.sharedInstance()
   return c.json(display.info)
 }
 

@@ -4,14 +4,13 @@ import Display from '../Display.js';
 import appRoot from 'app-root-path';
 import path from 'path';
 
-const display = Display.sharedInstance()
 const file = path.join(appRoot.path, './scripts/pose.py')
 const model = path.join(appRoot.path, './resources/models/pose_landmarker_full.task')
 
 export default class PoseEmitter  {
 
   constructor() {
-
+    const display = Display.sharedInstance()
     const script = {
       channel: 'ipc:///tmp/pose-data',
       file,

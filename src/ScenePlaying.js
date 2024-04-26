@@ -66,4 +66,11 @@ export default class Playing extends EventEmitter {
     this.removeAllListeners()
   }
 
+  get info() {
+    return {
+      isPlaying: this.isPlaying,
+      schema: this.schema ? this.schema : null,
+    }
+  }
+
 }

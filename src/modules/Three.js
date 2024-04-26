@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Display from '../Display.js';
+let display = null;
 
-const display = Display.sharedInstance()
 const defaultOptions = {
 
 }
@@ -11,7 +11,6 @@ export default class ThreeModule {
   constructor(canvas, options = {}) {
     this.canvas = canvas;
     this.options = { ...defaultOptions, ...options };
-
     this.load()
   }
 
@@ -20,6 +19,8 @@ export default class ThreeModule {
   }
 
   async load() {
+
+    const { width, height } = Display.size()
     const canvas = this.canvas;
     this.scene = new THREE.Scene();
 
@@ -27,7 +28,7 @@ export default class ThreeModule {
     light.position.set(0.5, 0.5, 1);
     this.add(light);
 
-    this.camera = new THREE.PerspectiveCamera(75, display.width / display.height, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     this.renderer = new THREE.WebGLRenderer({
       canvas,
     })

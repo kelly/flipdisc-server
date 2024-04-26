@@ -6,18 +6,20 @@ import { PixiModule, ThreeModule, MatterModule } from './modules/index.js';
 import { Utils } from 'flipdisc'
 import { isImageData, formatRGBAPixels } from '../utils/Image.js';
 
-const display = Display.sharedInstance()
 const defaultOptions = {
   shouldAutoRender: true,
   loopInterval: 30
 }
 
-export default class Scene extends EventEmitter {
+class Scene extends EventEmitter {
 
   constructor(options = {}) {
     super();
+    const { width, height } = Display.size()
     this.options = { ...defaultOptions, ...options }; 
-    this.canvas = createCanvas(display.width, display.height)
+    this.loopInterval = this.options.loopInterval;
+    this.shouldAutoRender = this.options.shouldAutoRender;
+    this.canvas = createCanvas(width, height)
     this.modules = []
   }
 
@@ -45,6 +47,8 @@ export default class Scene extends EventEmitter {
   }
 
   render(inputData) {
+    if (this.stopped) return
+
     const layers = this._renderModules()
     if (inputData) 
       layers.push(inputData)
@@ -56,7 +60,8 @@ export default class Scene extends EventEmitter {
 
   play() {
     const tick = this.tick.bind(this);
-    const { loopInterval } = this.options;
+    const loopInterval = this.loopInterval;
+
     if (this.loop) 
       this.ticker = ticker(tick, loopInterval)
   }
@@ -67,23 +72,29 @@ export default class Scene extends EventEmitter {
   }
 
   tick(i, clock) {
-    const { shouldAutoRender } = this.options;
     this.emit('tick')
     this.loop(i, clock)
-    if (shouldAutoRender) 
+    if (this.shouldAutoRender) 
       this.render()
   }
 
   stop() {
+    this.stopped = true
     // todo: stop all modules
     if (this.ticker) 
       this.ticker.stop();
   }
 
   resume() {
+    this.stopped = false
     // todo: resume all modules
     if (this.ticker) 
       this.ticker.start()
+  }
+
+  useLoop(loop, interval = this.loopInterval) {
+    this.loop = loop;
+    this.loopInterval = interval;
   }
 
   get width() {
@@ -108,6 +119,7 @@ export default class Scene extends EventEmitter {
     this.stop();
     this.modules.forEach(m =>  m.destroy())
     this.removeAllListeners();
+    this.ticker = null;
     this.canvas = null;
     this.loop = null
     this.modules = [];
@@ -143,3 +155,9 @@ export default class Scene extends EventEmitter {
     return this._matter;
   }
 }
+
+function createScene(options) {
+  return new Scene(options)
+}
+
+export { Scene as default, createScene }

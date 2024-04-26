@@ -24,10 +24,10 @@ export default class InteractionEmitter extends EventEmitter {
     const args =  (script.file) ? [script.file, ...script.args] : script.args;
 
     this.process = spawn(script.command || 'python', args);
-    this.process.on('error', (err) => {
+    this.process.once('error', (err) => {
       console.error(`Failed to start child process: ${err}`);
     })
-    this.process.on('exit', (code, signal) => {
+    this.process.once('exit', (code, signal) => {
       if (code !== 0 && this.maxRestarts-- > 0 && !this.isDestroying) {
         console.error(`Child process exited with code ${code}, restarting...`);
         this._run(script);

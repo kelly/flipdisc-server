@@ -28,9 +28,7 @@ const lava = function(options) {
   options = { ...defaults, ...options };
   const { blobCount } = options;
 
-  const scene = new Scene({
-    loopInterval: 30,
-  });
+  const scene = new Scene();
 
 
   let time = 0;
@@ -66,12 +64,12 @@ const lava = function(options) {
     scene.three.add(effect);
   })
 
-  scene.loop = (i, clock) => {
+  scene.useLoop((i, clock) => {
     const delta = clock.getDelta();
     time += delta * 1.0 * 0.5;
     scene.pixi.setText('Kelly', 0, 0, { fontName: 'Futura', fontSize: 28})
     updateCubes(effect, time, blobCount);
-  }
+  }, 30)
 
   return scene;
 }

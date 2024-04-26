@@ -1,12 +1,13 @@
 {
-  "name": "flipdisc-ui",
+  "name": "flipdisc-server",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./src/server.js",
+    "start": "node ./server.js",
+    "package": "npx rollup index.js --file index.cjs --format cjs",
     "postinstall": "pip install pyzmq opencv-python mediapipe"
   },
   "author": "",
@@ -16,7 +17,6 @@
     "@pixi/node": "^7.3.0",
     "app-root-path": "^3.1.0",
     "flipdisc": "file:../flipdisc",
-    "gsap": "^3.12.5",
     "hono": "^4.2.1",
     "matter-js": "^0.19.0",
     "node-canvas-webgl": "^0.3.0",

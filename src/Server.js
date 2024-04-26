@@ -4,26 +4,43 @@ import API from './api/index.js';
 import SceneManager from './SceneManager.js'
 import { startWebsocket } from './WebSocket.js';
 
-SceneManager.sharedInstance().loadLocal()
-const app = new Hono()
-const server = serve(app, (info) => {
-  console.log(`Listening on http://localhost:${info.port}`)
-})
-startWebsocket()
+let app;
 
-// scenes
-app.get('/api/scenes', API.getScenes)
-app.get('/api/scenes/:id', API.getSceneByID)
+const defaults = {
+  port: 3000,
+  wsPort: 7071,
+  sceneDir: './scenes'
+}
 
-// playing
-app.post('/api/playing/next', API.postPlayingNext)
-app.post('/api/playing',  API.postPlaying)
-app.post('/api/playing/pause', API.postPlayingPause)
-app.post('/api/playing/resume', API.postPlayingResume)
-app.post('/api/playing/toggle', API.postPlayingToggle)
+const createServer = (options) => {
+  options = { ...defaults, ...options }
+  SceneManager.sharedInstance().loadLocal(options.sceneDir)
+  const app = new Hono()
 
-// display
-app.get('/api/display', API.getDisplay)
+  const server = serve({
+    fetch: app.fetch,
+    port: options.port,
+  }, (info) => {
+    console.log(`Listening on http://localhost:${info.port}`)
+  })
+  startWebsocket(options.wsPort)
 
+  // scenes
+  app.get('/api/scenes', API.getScenes)
+  app.post('/api/scenes/next', API.postScenesNext)
+  app.post('/api/scenes/previous', API.postScenesPrevious)
+  app.get('/api/scenes/:id', API.getSceneByID)
 
-export default app
+  // playing
+  app.post('/api/playing',  API.postPlaying)
+  app.post('/api/playing/pause', API.postPlayingPause)
+  app.post('/api/playing/resume', API.postPlayingResume)
+  app.post('/api/playing/toggle', API.postPlayingToggle)
+
+  // display
+  app.get('/api/display', API.getDisplay)
+
+  return app
+}
+
+export default createServer;

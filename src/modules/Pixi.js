@@ -3,7 +3,6 @@ import path from 'path';
 import Display from '../Display.js';
 import appRoot from 'app-root-path';
 
-const display = Display.sharedInstance()
 const fonts = [
   { 
     path: 'tb-8-2.fnt', 
@@ -24,7 +23,6 @@ const defaults = {
   fontName: 'cg',
   fontSize: 5,
   fill: 0xFFFFFF,
-  maxWidth: display.width,
   fontWeight: 'bold'
 }
 
@@ -44,10 +42,12 @@ export default class PixiModule {
   }
 
   get app() {
+    const { width, height } = Display.size()
+
     if (!this._app) {
       this._app = new Application({
-        width: display.width,
-        height: display.height,
+        width: width,
+        height: height,
         transparent: false,
         antialias: false,
         resolution: 1        
@@ -61,7 +61,8 @@ export default class PixiModule {
   }
 
   _createBitmapText(text, options) {
-    const { fontName, fill, maxWidth } = options
+    const { width, height } = Display.size()
+    const { fontName, fill, maxWidth = width } = options
     const font = this._bitmapFontForName(fontName)
     return new BitmapText(text, {
       fontFamily: font.name,
@@ -124,7 +125,7 @@ export default class PixiModule {
     // Assets.unload(this.fontPaths)
     this.textView = null;
     this.isFontLoaded = false;
-    this.app.destroy(true, { children: true, texture: true, baseTexture: true });
+    this.app.destroy();
   }
 
   render() {

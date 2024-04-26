@@ -3,7 +3,6 @@ import * as Motion from '../../utils/motion.js'
 import InteractionEmitter from './Interaction.js'
 import Display from '../Display.js';
 
-const display = Display.sharedInstance()
 const defaultMotionOptions = {
   motionTriggers: null
 }
@@ -68,12 +67,13 @@ export default class MotionEmitter extends InteractionEmitter {
   }
 
   _moveOne(landmarks, history, gesture) {
+    const { width, height } = Display.size()
     const position = this._center(landmarks)
-    const screenPosition = { x: position.x * display.width, y: position.y * display.height }
+    const screenPosition = { x: position.x * width, y: position.y * height }
     const timestamp = Date.now()
     const angle = Motion.avgAngle(position, history)
     const velocity = Motion.avgVelocity(position, history)
-    const screenVelocity = velocity * display.width
+    const screenVelocity = velocity * width
 
     return { position, screenPosition, screenVelocity, angle, velocity, gesture, timestamp }
   }

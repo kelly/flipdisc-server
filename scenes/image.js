@@ -28,7 +28,7 @@ const image = async function(options) {
     loopInterval: 100,
   });
 
-  scene.on('loaded', () => {
+  scene.once('loaded', () => {
     sprite = Sprite.from(texture);
     scene.pixi.add(sprite);
     sprite.anchor.set(0.5);
@@ -38,7 +38,7 @@ const image = async function(options) {
     scene.render();
   })
 
-  scene.on('unload' , () => {
+  scene.once('unload' , () => {
     Assets.unload(url);
   })
 

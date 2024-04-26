@@ -1,6 +1,4 @@
-const display = {}
-
-display.layout = [
+const layout = [
   [13, 7, 1],
   [14, 8, 2],
   [15, 9, 3],
@@ -8,7 +6,7 @@ display.layout = [
   [17, 11, 5],
   [18, 12, 6]
 ]
-display.devices = [{
+const devices = [{
   path: '/dev/cu.usbserial-B0027K6H',
   addresses: [1, 2, 3, 4, 5, 6],
   baudRate: 57600
@@ -22,8 +20,8 @@ display.devices = [{
   baudRate: 57600
 }]
 
-display.options = {
+const options = {
   isMirrored: true
 }
 
-export { display }
+export { layout, devices, options }
