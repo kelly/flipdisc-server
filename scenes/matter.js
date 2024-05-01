@@ -6,14 +6,18 @@ const defaults = {
   maxBodies: 100,
   friction: 0.1,
   restitution: 0.9,
-  size: 5
+  size: 5,
+  hasWalls: false
 }
 
 const schema = {
   title: 'Matter',
   description: 'A physics simulation using matter.js.',
-  type: 'object',
   properties: {
+    hasWalls: {
+      type: 'boolean',
+      default: defaults.hasWalls,
+    },
     maxBodies: {
       type: 'number',
       default: defaults.maxBodies,
@@ -43,7 +47,7 @@ const schema = {
 
 const matter = function(options) {
   options = { ...defaults, ...options };
-  const { maxBodies, friction, restitution, size } = options;
+  const { maxBodies, friction, restitution, size, hasWalls } = options;
 
   const scene = new Scene()
   const bodies = [];
@@ -63,6 +67,8 @@ const matter = function(options) {
   
   scene.on('loaded', () => {
     scene.matter.add([boxA, boxB]);
+    if (hasWalls)
+      scene.matter.addWalls()
   })
   scene.loop = (i) => {
     const s = parseInt(Math.random() * size) + 1;

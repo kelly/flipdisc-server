@@ -4,10 +4,11 @@ const postPlaying = async (c) => {
   const manager = SceneManager.sharedInstance();
   const data = await c.req.json()
   const id = data.id
-  if (!id) {
+  const options = data.options || {}
+  if (id === undefined || id >= manager.scenes.length) {
     return c.status(404).json({ error: 'scene not found' })
   }
-  await manager.setPlayingByIndex(id)
+  await manager.setPlayingByIndex(id, options)
   return c.json(manager.playing.info)
 }
 

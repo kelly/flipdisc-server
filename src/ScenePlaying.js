@@ -23,6 +23,8 @@ export default class Playing extends EventEmitter {
 
     this.isLoaded = await this.load()
     this.play()
+    
+    return this
   }
 
   async load() {
@@ -70,6 +72,7 @@ export default class Playing extends EventEmitter {
     return {
       isPlaying: this.isPlaying,
       schema: this.schema ? this.schema : null,
+      id: this.schema ? this.schema.id : null
     }
   }
 

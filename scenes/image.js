@@ -8,7 +8,6 @@ const defaults = {
 const schema = {
   title: 'Image',
   description: 'displaying an image',
-  type: 'object',
   properties: {
     url: {
       type: 'string',

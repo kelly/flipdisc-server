@@ -1,9 +1,10 @@
 import Matter from 'matter-js';
+import Display from '../Display.js';
 
-var { Engine, Render, Bodies, Composite } = Matter;
+var { Engine, Render, Bodies, Composite, World } = Matter;
 
 const defaultOptions = {
-  hasWalls: true,
+  hasWalls: false,
   tickRate: 4,
 }
 
@@ -33,22 +34,20 @@ export default class MatterModule {
 
   _setupDefaultBodies() {
     if (this.options.hasWalls) 
-      this._setupBodiesWalls()
+      this.addWalls()
   }
 
-  _setupBodiesWalls() {
+  addWalls() {
+    const { width, height } = Display.size()
     const wallOptions = {
-      isStatic: true,
-      render: {
-        fillStyle: "white"
-      }
+      isStatic: true
     };
 
     const thickness = 1
     const walls = [
-      Bodies.rectangle(0, this.height + thickness, this.width, thickness, wallOptions),  // bottom
-      Bodies.rectangle(-thickness, this.height / 2, thickness, this.height, wallOptions), // left
-      Bodies.rectangle(this.width + thickness, this.height / 2, thickness, this.height, wallOptions), // right
+      Bodies.rectangle(0, height + thickness, width, thickness, wallOptions),  // bottom
+      Bodies.rectangle(-thickness, height / 2, thickness, height, wallOptions), // left
+      Bodies.rectangle(width + thickness, height / 2, thickness, height, wallOptions), // right
     ]
 
     this.add(walls)

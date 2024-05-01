@@ -1,8 +1,10 @@
+import { scene } from '../../scenes/calendar.js';
 import SceneManager from '../SceneManager.js'
 
 const getScenes = async (c) => {
   const manager = SceneManager.sharedInstance();
-  return c.json(manager.scenes)
+  const scenes = manager.scenes.map(scene => scene.schema)
+  return c.json(scenes)
 }
  
 const getSceneByID = async (c) => {
@@ -25,7 +27,6 @@ const postScenesPrevious = async (c) => {
   manager.previous()
   return c.json(manager.playing.info)
 }
-
 
 export {
   getSceneByID,

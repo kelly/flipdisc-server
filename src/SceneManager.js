@@ -49,14 +49,14 @@ export default class SceneManager {
     this.setPlayingByIndex(prevIdx)
   }
 
-  async setPlayingByIndex(idx) {
+  async setPlayingByIndex(idx, options) {
     if (idx => 0 && idx < this.scenes.length) {
-      await this.setPlaying(this.scenes[idx])
+      await this.setPlaying(this.scenes[idx], options)
     }
   }
 
-  async setPlaying(scene) {
-    return this.playing.set(scene)
+  async setPlaying(scene, options) {
+    return this.playing.set(scene, options)
   }
 
   get isPlayingScene() {
