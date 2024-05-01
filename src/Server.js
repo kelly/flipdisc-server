@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { serve } from "@hono/node-server";
 import API from './api/index.js';
 import SceneManager from './SceneManager.js'
+import SceneTaskManager from './SceneTaskManager.js';
 import { startWebsocket } from './WebSocket.js';
 
 let app;
@@ -12,9 +13,11 @@ const defaults = {
   sceneDir: './scenes'
 }
 
-const createServer = (options) => {
+const createServer = async (options) => {
   options = { ...defaults, ...options }
-  SceneManager.sharedInstance().loadLocal(options.sceneDir)
+  const scenes = await SceneManager.sharedInstance().loadLocal(options.sceneDir);
+  const taskManager = new SceneTaskManager(scenes)
+
   const app = new Hono()
 
   const server = serve({
@@ -36,6 +39,7 @@ const createServer = (options) => {
   app.post('/api/playing/pause', API.postPlayingPause)
   app.post('/api/playing/resume', API.postPlayingResume)
   app.post('/api/playing/toggle', API.postPlayingToggle)
+  app.get('/api/playing', API.getPlaying)
 
   // display
   app.get('/api/display', API.getDisplay)

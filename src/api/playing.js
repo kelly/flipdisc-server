@@ -29,11 +29,17 @@ const postPlayingPause = async (c) => {
   manager.playing.stop()
   return c.status(200)
 }
+
+const getPlaying = async (c) => {
+  const manager = SceneManager.sharedInstance();
+  return c.json(manager.playing.info)
+}
  
 
 export {
   postPlaying,
   postPlayingPause,
   postPlayingResume,
-  postPlayingToggle
+  postPlayingToggle,
+  getPlaying
 }

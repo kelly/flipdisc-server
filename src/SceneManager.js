@@ -2,6 +2,7 @@ import { isImageData } from '../utils/Image.js';
 import Display from './Display.js';
 import SceneImporter from './SceneImporter.js';
 import ScenePlaying from './ScenePlaying.js';
+import later from '@breejs/later';
 
 let manager;
 
@@ -16,6 +17,7 @@ export default class SceneManager {
     this.options = { ...defaults, ...options };
     this.playing = new ScenePlaying();
     this.scenes = scenes;
+    this.queue = [];
     this._autoPlayIfEnabled();
     this._destroyOnExit();
     this._registerEvents()
@@ -37,30 +39,62 @@ export default class SceneManager {
     return this.scenes
   }  
 
+  addQueueItem(item) {
+    this.queue.push(item)
+  }
+
   next() {
-    const idx = this.playing.schema.id
-    const nextIdx = idx >= this.scenes.length - 1 ? 0 : idx + 1
-    this.setPlayingByIndex(nextIdx)
-  }
-
-  previous() {
-    const idx = this.playing.schema.id
-    const prevIdx = idx === 0 ? this.scenes.length - 1 : idx - 1
-    this.setPlayingByIndex(prevIdx)
-  }
-
-  async setPlayingByIndex(idx, options) {
-    if (idx => 0 && idx < this.scenes.length) {
-      await this.setPlaying(this.scenes[idx], options)
+    let item = {}
+    if (this.queue.length > 0) {
+      item = this.queue.shift()
+    } else {
+      const _id = this.playing.schema.id 
+      item.id = (_id >= this.scenes.length - 1) ? 0 : _id + 1
+      this.setPlayingByQueueItem(item)
     }
   }
 
-  async setPlaying(scene, options) {
-    return this.playing.set(scene, options)
+  previous() {
+    let item = {}
+    if (this.queue.length > 0) {
+      item = this.queue.pop()
+    } else {
+      const idx = this.playing.schema.id
+      item.id = (idx === 0) ? this.scenes.length - 1 : idx - 1
+    }
+    this.setPlayingByQueueItem(item)
+  }
+
+  async setPlayingByQueueItem(item, shouldPlayLast = false) {
+    const scene = this.scenes[item.id]
+    if (shouldPlayLast && this.playing.isPlaying) this.addQueueItem({ id: this.playing.schema.id })
+    await this.setPlaying(scene, item.options, item.duration)
+  }
+
+  async setPlayingByIndex(idx, options, duration) {
+    if (idx => 0 && idx < this.scenes.length) {
+      await this.setPlaying(this.scenes[idx], options, duration)
+    }
+  }
+
+  async setPlaying(scene, options, duration) {
+    return this.playing.set(scene, options, duration)
   }
 
   get isPlayingScene() {
     return this.playing.isPlaying
+  }
+
+  get scenes() {
+    return this._scenes;
+  }
+
+  set scenes(scenes) {
+    scenes?.map((scene, idx) => {
+      scene.schema.id = idx
+      if (scene.task) scene.task.id = idx
+    })
+    this._scenes = scenes;
   }
 
   _registerEvents() {

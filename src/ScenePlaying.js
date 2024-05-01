@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import later from '@breejs/later';
 
 export default class Playing extends EventEmitter {
   
@@ -6,9 +7,10 @@ export default class Playing extends EventEmitter {
     super();
     this.scene = null;
     this.isPlaying = false;
+    this.timer = null;
   }
 
-  async set(sceneObj, options = {}) {
+  async set(sceneObj, options = {}, duration = false) {
     const { scene, schema } = sceneObj;
     if (this.scene)
       this.cleanupScene()
@@ -22,8 +24,9 @@ export default class Playing extends EventEmitter {
     }
 
     this.isLoaded = await this.load()
-    this.play()
-    
+
+    duration ? this.playFor(duration) : this.play();
+
     return this
   }
 
@@ -36,6 +39,15 @@ export default class Playing extends EventEmitter {
     this.scene.on('update', (data) => {
       this.emit('update', data);
     });
+  }
+
+  playFor(duration) {
+    const time = later.parse.text(duration);
+    this.play();
+    this.timer = setTimeout(() => {
+      this.stop();
+      this.emit('finished')
+    }, time)  
   }
 
   play() {
@@ -58,6 +70,7 @@ export default class Playing extends EventEmitter {
   }
 
   cleanupScene() {
+    clearTimeout(this.timer);
     this.isPlaying = false;
     this.scene?.destroy();
     this.scene = null;

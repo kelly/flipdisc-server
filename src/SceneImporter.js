@@ -28,9 +28,8 @@ export default class SceneImporter {
   async loadAll() {
     const scenes = await this.import();
     return Promise.all(scenes.map(async (s, idx) =>  {
-      s = await s.load()
-      s.schema.id = idx; // id by import order
-      return s;
+      const scene = await s.load()
+      return scene;
   }))
   }
 

@@ -3,6 +3,7 @@ import Display from './src/Display.js';
 import SceneManager from './src/SceneManager.js';
 import { Pose, Gesture, Voice } from './src/interaction/index.js'
 import createServer from './src/Server.js'
+import createTask from './src/SceneTask.js'
 
 export {
   Scene,
@@ -12,5 +13,6 @@ export {
   Gesture,
   Voice,
   createServer,
-  createScene
+  createScene, 
+  createTask
 }

@@ -3,7 +3,8 @@ import {
   postPlaying,
   postPlayingPause,
   postPlayingResume,
-  postPlayingToggle } from './playing.js'
+  postPlayingToggle,
+  getPlaying } from './playing.js'
 import { 
   getSceneByID,
   getScenes, 
@@ -20,7 +21,8 @@ const API = {
   postPlaying,
   postPlayingPause,
   postPlayingResume,
-  postPlayingToggle
+  postPlayingToggle,
+  getPlaying
 }
 
 export default API;
