@@ -10,12 +10,15 @@ export default class Playing extends EventEmitter {
     this.timer = null;
   }
 
-  async set(sceneObj, options = {}, duration = false) {
+  async set(item) {
+    const { sceneObj, options, duration } = item;
     const { scene, schema } = sceneObj;
+    
     if (this.scene)
       this.cleanupScene()
 
     this.schema = schema;
+    console.log(this.schema)
 
     try {
       await this._setup(scene, schema, options);
@@ -44,7 +47,7 @@ export default class Playing extends EventEmitter {
   playFor(duration) {
     const time = later.parse.text(duration);
     this.play();
-    this.timer = setTimeout(() => {
+    this.timer = later.setTimeout(() => {
       this.stop();
       this.emit('finished')
     }, time)  
@@ -81,6 +84,10 @@ export default class Playing extends EventEmitter {
     this.removeAllListeners()
   }
 
+  get id() {
+    return this.schema?.id
+  }
+  
   get info() {
     return {
       isPlaying: this.isPlaying,

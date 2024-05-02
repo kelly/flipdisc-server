@@ -34,19 +34,18 @@ export default class SceneTaskManager {
   }
 
   async exec(task) {
-    console.log('executing task', task.id, task.func)
     const result = await this.pool.exec(task.func)
     const { options, duration, wait = true } = result;
     if (result) {
       console.log(result)
       if (wait) {
-        sceneManager.addQueueItem({ 
+        sceneManager.queue.add({ 
           id: task.id, 
           options,
           duration,
         });
       } else {
-        sceneManager.setPlayingFromQueue(item, true)
+        sceneManager.play(item)
       }
     }
   }

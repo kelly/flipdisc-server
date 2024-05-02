@@ -7,22 +7,33 @@ import {
   getPlaying } from './playing.js'
 import { 
   getSceneByID,
-  getScenes, 
-  postScenesNext,
-  postScenesPrevious }from './scene.js'
-
+  getScenes
+ } from './scene.js'
+import {
+  getQueue,
+  getQueueSettings,
+  postQueueSettings,
+  postQueue,
+  postQueueNext,
+  postQueuePrevious
+} from './queue.js'
+ 
 
 const API = { 
   getScenes,
   getSceneByID,
-  postScenesNext,
-  postScenesPrevious,
   getDisplay,
   postPlaying,
   postPlayingPause,
   postPlayingResume,
   postPlayingToggle,
-  getPlaying
+  getPlaying,
+  getQueue,
+  getQueueSettings,
+  postQueueSettings,
+  postQueue,
+  postQueueNext,
+  postQueuePrevious
 }
 
 export default API;

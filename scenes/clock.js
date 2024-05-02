@@ -7,11 +7,11 @@ const schema = {
 }
 
 const task = createTask(() => {
-  
   return {
     options: {},
   }
-}, 'every 1 minutes')
+}, 'every 15 seconds')
+
 
 const clock = function() {
   const scene = new Scene({
@@ -24,7 +24,7 @@ const clock = function() {
     const hours = date.getHours();
     const minutes = date.getMinutes();
     const time = `${hours}:${minutes}`;
-    this.pixi.setText(i, 0, 0, { fontName: 'Futura', fontSize: 28})
+    scene.pixi.setText(i, 0, 0, { fontName: 'Futura', fontSize: 28})
   })
 
   return scene;

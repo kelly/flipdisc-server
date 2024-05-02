@@ -44,6 +44,14 @@ const createServer = async (options) => {
   // display
   app.get('/api/display', API.getDisplay)
 
+  // queue
+  app.get('/api/queue', API.getQueue)
+  app.get('/api/queue/settings', API.getQueueSettings)
+  app.post('/api/queue/settings', API.postQueueSettings)
+  app.post('/api/queue', API.postQueue)
+  app.post('/api/queue/next', API.postQueueNext)
+  app.post('/api/queue/previous', API.postQueuePrevious)
+  
   return app
 }
 

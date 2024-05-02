@@ -6,9 +6,9 @@ const postPlaying = async (c) => {
   const id = data.id
   const options = data.options || {}
   if (id === undefined || id >= manager.scenes.length) {
-    return c.status(404).json({ error: 'scene not found' })
+    return c.notFound()
   }
-  await manager.setPlayingByIndex(id, options)
+  await manager.play({id, options})
   return c.json(manager.playing.info)
 }
 

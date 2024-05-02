@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import appRoot from 'app-root-path';
 import SceneImport from './SceneImport.js';
+import SceneManager from './SceneManager.js';
+import Scene from './Scene.js';
 
 export default class SceneImporter {
 
@@ -35,6 +37,7 @@ export default class SceneImporter {
 
   async loadOne(filename, hasChanged = false) {
     const scene = this.imports.find(s => s.filename === filename);
+    console.log('loading scene', scene.filename)
     return scene.load(hasChanged);
   }
 
@@ -45,8 +48,10 @@ export default class SceneImporter {
 
   watchDir() {
     this.reloader = fs.watch(this.dir, async (eventType, filename) => {
-      if (eventType === 'change') 
-        await this.loadOne(filename, true);
+      if (eventType === 'change') {
+        const scene = await this.loadOne(filename, true);
+        SceneManager.sharedInstance().updateScene(scene);
+      }
     });
   }
 
