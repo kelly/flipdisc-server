@@ -31,6 +31,7 @@ export default class SceneQueue  {
   update(item) {
     const idx = this.items.findIndex(i => i.id === item.id)
     if (idx !== -1) 
+      item.props = {...this.items[idx].props, ...item.props}
       this.items[idx] = item
   }
 
@@ -41,12 +42,20 @@ export default class SceneQueue  {
     }
   }
 
+  sort(ids) {
+    this.items = ids.map(id => this.getItem({ id }))
+  }
+
   next() {
     if (!this.hasItems) return;
 
     const item = this.items.shift();
     this.loopQueueIfNeeded(item); 
     return item;    
+  }
+
+  remove(id) {
+    this.items = this.items.filter(i => i.id != id)
   }
 
   clear() {
@@ -69,7 +78,20 @@ export default class SceneQueue  {
     this.clear()
   }
 
+  set settings({ duration, shouldLoop }) {
+    this.defaultDuration = duration;
+    this.shouldLoop = shouldLoop;
+  }
+
+  get settings() {
+    return { duration: this.defaultDuration, shouldLoop: this.shouldLoop }
+  }
+
   get hasItems() {
     return this.items.length > 0;
+  }
+
+  get itemsArray() {
+    return this.items.map(i => i.id)
   }
 }

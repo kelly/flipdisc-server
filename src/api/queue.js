@@ -2,7 +2,7 @@ import SceneManager from '../SceneManager.js'
 
 const getQueue = async (c) => {
   const manager = SceneManager.sharedInstance();
-  const items = manager.queue.items
+  const items = manager.queue.itemsArray
   return c.json(items)
 }
 
@@ -25,7 +25,7 @@ const postQueue = async (c) => {
     return c.notFound()
   }
   manager.queue.add(data)
-  return c.json(manager.queue.items)
+  return c.json(manager.queue.itemsArray)
 }
 
 const postQueueNext = async (c) => {
@@ -39,6 +39,13 @@ const postQueueNext = async (c) => {
   }
 }
 
+const postQueueSort = async (c) => {
+  const manager = SceneManager.sharedInstance();
+  const data = await c.req.json()
+  manager.queue.sort(data)
+  return c.json(manager.queue.itemsArray)
+}
+
 const postQueuePrevious = async (c) => {
   const manager = SceneManager.sharedInstance();
   const previous = manager.queue.previous()
@@ -50,11 +57,20 @@ const postQueuePrevious = async (c) => {
   }
 }
 
+const deleteQueueItem = async (c) => {
+  const manager = SceneManager.sharedInstance();
+  const id = c.req.param().id
+  manager.queue.remove(parseInt(id))
+  return c.json(manager.queue.itemsArray)
+}
+
 export {
   getQueue,
   getQueueSettings,
   postQueueSettings,
   postQueue,
+  postQueueSort,
   postQueueNext,
-  postQueuePrevious
+  postQueuePrevious,
+  deleteQueueItem
 }

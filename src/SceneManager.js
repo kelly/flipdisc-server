@@ -40,40 +40,6 @@ export default class SceneManager {
     return this.scenes
   }  
 
-  // next() {
-  //   let item = {}
-  //   if (this.queue.hasItems) {
-  //     item = this.queue.next()
-  //   } else {
-  //     const _id = this.playing.schema.id || 0
-  //     item.id = (_id >= this.scenes.length - 1) ? 0 : _id + 1
-  //   }
-  //   this.setPlayingQueueItem(item)
-  // }
-
-  // previous() {
-  //   let item = {}
-  //   if (this.queue.hasItems) {
-  //     item = this.queue.previous()
-  //   } else {
-  //     const idx = this.playing.schema.id || 0
-  //     item.id = (idx === 0) ? this.scenes.length - 1 : idx - 1
-  //   }
-  //   this.setPlayingQueueItem(item)
-  // }
-
-  // async setPlayingQueueItem(item, shouldPlayLast = false) {
-  //   const scene = this.scenes[item.id]
-  //   if (shouldPlayLast && this.playing.isPlaying) this.addQueueItem({ id: this.playing.schema.id })
-  //   await this.setPlaying(scene, item.options, item.duration)
-  // }
-
-  // async setPlayingByIndex(idx, options, duration) {
-  //   if (idx => 0 && idx < this.scenes.length) {
-  //     await this.setPlaying(this.scenes[idx], options, duration)
-  //   }
-  // }
-
   async play(item) {
     item.sceneObj = this.getScene(item.id)
     return this.playing.set(item)
@@ -90,11 +56,9 @@ export default class SceneManager {
   }
 
   updateScene(scene) {
-    console.log('updating scene', scene.schema.title)
     const id = this.getSceneIdFromTitle(scene.schema.title)
     if (id) {
       this.scenes[id] = this._decorateIdScene(scene, id)
-      console.log('playing', this.playing.id, id)
       if (this.playing.id == id) this.play({ id })
     }
   }

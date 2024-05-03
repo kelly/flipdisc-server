@@ -22,8 +22,6 @@ const schema = {
   }
 }
 
-let update;
-
 const lava = function(options) {
   options = { ...defaults, ...options };
   const { blobCount } = options;

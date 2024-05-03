@@ -15,7 +15,9 @@ import {
   postQueueSettings,
   postQueue,
   postQueueNext,
-  postQueuePrevious
+  postQueueSort,
+  postQueuePrevious,
+  deleteQueueItem
 } from './queue.js'
  
 
@@ -32,8 +34,10 @@ const API = {
   getQueueSettings,
   postQueueSettings,
   postQueue,
+  postQueueSort,
   postQueueNext,
-  postQueuePrevious
+  postQueuePrevious,
+  deleteQueueItem
 }
 
 export default API;

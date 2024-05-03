@@ -5,11 +5,13 @@ import { ticker } from '../utils/animation.js';
 import { PixiModule, ThreeModule, MatterModule } from './modules/index.js';
 import { Utils } from 'flipdisc'
 import { isImageData, formatRGBAPixels } from '../utils/Image.js';
+import createTask from '../src/SceneTask.js';
 
 const defaultOptions = {
   shouldAutoRender: true,
   loopInterval: 30
 }
+
 
 class Scene extends EventEmitter {
 
@@ -113,6 +115,10 @@ class Scene extends EventEmitter {
     return this.pixi.stage
   }
 
+  get isStatic() {
+    return !this.loop;
+  }
+
   destroy() {
     this.emit('unload')
     
@@ -154,6 +160,7 @@ class Scene extends EventEmitter {
     }
     return this._matter;
   }
+
 }
 
 function createScene(options) {

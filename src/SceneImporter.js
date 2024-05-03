@@ -3,7 +3,6 @@ import path from 'path';
 import appRoot from 'app-root-path';
 import SceneImport from './SceneImport.js';
 import SceneManager from './SceneManager.js';
-import Scene from './Scene.js';
 
 export default class SceneImporter {
 

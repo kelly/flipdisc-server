@@ -49,9 +49,11 @@ const createServer = async (options) => {
   app.get('/api/queue/settings', API.getQueueSettings)
   app.post('/api/queue/settings', API.postQueueSettings)
   app.post('/api/queue', API.postQueue)
+  app.post('/api/queue/sort', API.postQueueSort)
   app.post('/api/queue/next', API.postQueueNext)
   app.post('/api/queue/previous', API.postQueuePrevious)
-  
+  app.delete('/api/queue/:id', API.deleteQueueItem)
+
   return app
 }
 

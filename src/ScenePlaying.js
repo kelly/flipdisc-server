@@ -11,17 +11,18 @@ export default class Playing extends EventEmitter {
   }
 
   async set(item) {
-    const { sceneObj, options, duration } = item;
+    const { sceneObj, props, duration } = item;
     const { scene, schema } = sceneObj;
     
     if (this.scene)
       this.cleanupScene()
 
     this.schema = schema;
-    console.log(this.schema)
+    this.props = props;
+    this.duration = duration;
 
     try {
-      await this._setup(scene, schema, options);
+      await this._setup(scene, props);
     } catch (e) {
       this.emit('error', e);
     }
@@ -37,8 +38,8 @@ export default class Playing extends EventEmitter {
     return await this.scene.load();
   }
 
-  async _setup(scene, schema, options) {
-    this.scene = await scene(options)
+  async _setup(scene, props) {
+    this.scene = await scene(props)
     this.scene.on('update', (data) => {
       this.emit('update', data);
     });
@@ -91,8 +92,11 @@ export default class Playing extends EventEmitter {
   get info() {
     return {
       isPlaying: this.isPlaying,
-      schema: this.schema ? this.schema : null,
-      id: this.schema ? this.schema.id : null
+      schema: this.schema || {},
+      id: this.schema?.id,
+      props: this.props || {},
+      isStatic: this.scene?.isStatic,
+      duration: this.duration
     }
   }
 

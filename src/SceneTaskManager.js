@@ -1,7 +1,6 @@
 import workerpool  from 'workerpool';
 import later from '@breejs/later';
 import SceneManager from './SceneManager.js';
-import SceneTask from './SceneTask.js';
 
 let sceneManager;
 
@@ -35,13 +34,12 @@ export default class SceneTaskManager {
 
   async exec(task) {
     const result = await this.pool.exec(task.func)
-    const { options, duration, wait = true } = result;
+    const { props, duration, wait = true } = result;
     if (result) {
-      console.log(result)
       if (wait) {
         sceneManager.queue.add({ 
           id: task.id, 
-          options,
+          props,
           duration,
         });
       } else {
@@ -53,7 +51,11 @@ export default class SceneTaskManager {
   scheduleTask(task) {
     const interval = later.parse.text(task.frequency);
     task.timer = later.setInterval(() => {
-      this.exec(task)
+      try {
+        this.exec(task)
+      } catch (e) {
+        console.warn('error executing task', e)
+      }
     }, interval);
   }
 
