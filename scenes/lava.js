@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import Scene from '../src/Scene.js';
 import { MarchingCubes } from 'three/addons/objects/MarchingCubes.js'
 
-
 const defaults = {
   blobCount: 5
 }
@@ -22,9 +21,9 @@ const schema = {
   }
 }
 
-const lava = function(options) {
-  options = { ...defaults, ...options };
-  const { blobCount } = options;
+const lava = function(props) {
+  props = { ...defaults, ...props };
+  const { blobCount } = props;
 
   const scene = new Scene();
 

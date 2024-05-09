@@ -33,7 +33,10 @@ const postQueueNext = async (c) => {
   const next = manager.queue.next()
   if (next) {
     manager.play(next)
-    return c.json(manager.playing.info)
+    return c.json({
+      playing: manager.playing.info,
+      queue: manager.queue.itemsArray
+    })
   } else {
     return c.notFound()
   }
@@ -51,7 +54,10 @@ const postQueuePrevious = async (c) => {
   const previous = manager.queue.previous()
   if (previous) {
     manager.play(previous)
-    return c.json(manager.playing.info)
+    return c.json({
+      playing: manager.playing.info,
+      queue: manager.queue.itemsArray
+    })
   } else {
     return c.notFound()
   }

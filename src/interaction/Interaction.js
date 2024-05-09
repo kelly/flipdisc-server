@@ -1,4 +1,3 @@
-
 import EventEmitter from 'events';
 import { spawn } from 'child_process'
 import zmq from 'zeromq'

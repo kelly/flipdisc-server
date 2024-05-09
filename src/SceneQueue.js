@@ -1,7 +1,7 @@
 
 const defaults = { 
   duration: '15 minutes',
-  shouldLoop: false
+  shouldLoop: true
 }
 
 export default class SceneQueue  {
@@ -19,7 +19,10 @@ export default class SceneQueue  {
   }
 
   add(item) {
-    if (!item.id) return;
+    if (item.id === undefined) return;
+    if (item.duration === undefined) {
+      item.duration = this.defaultDuration;
+    }
     this.getItem(item) ? this.update(item) : this.items.push(item);
     return item;
   }

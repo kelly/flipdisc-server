@@ -2,16 +2,14 @@ import EventEmitter from 'events';
 import { createCanvas } from 'node-canvas-webgl';
 import Display from './Display.js';
 import { ticker } from '../utils/animation.js';
-import { PixiModule, ThreeModule, MatterModule } from './modules/index.js';
+import { PixiModule, ThreeModule, MatterModule, UserInputModule } from './modules/index.js';
 import { Utils } from 'flipdisc'
 import { isImageData, formatRGBAPixels } from '../utils/Image.js';
-import createTask from '../src/SceneTask.js';
 
 const defaultOptions = {
   shouldAutoRender: true,
   loopInterval: 30
 }
-
 
 class Scene extends EventEmitter {
 
@@ -48,9 +46,7 @@ class Scene extends EventEmitter {
     return Utils.mergeFrames(layers)
   }
 
-  render(inputData) {
-    if (this.stopped) return
-
+  _render(inputData) {
     const layers = this._renderModules()
     if (inputData) 
       layers.push(inputData)
@@ -58,6 +54,11 @@ class Scene extends EventEmitter {
     layers.push(this.imageData)
     const data = this._mergeLayers(layers)
     this.emit('update', data)
+  }
+
+  render(inputData) {
+    if (!this.stopped && this.ticker && this.shouldAutoRender) return; // we'll just render it on the next tick
+    this._render(inputData)
   }
 
   play() {
@@ -75,9 +76,8 @@ class Scene extends EventEmitter {
 
   tick(i, clock) {
     this.emit('tick')
-    this.loop(i, clock)
-    if (this.shouldAutoRender) 
-      this.render()
+    if (this.loop) this.loop(i, clock)
+    if (this.shouldAutoRender) this._render()
   }
 
   stop() {
@@ -97,6 +97,21 @@ class Scene extends EventEmitter {
   useLoop(loop, interval = this.loopInterval) {
     this.loop = loop;
     this.loopInterval = interval;
+  }
+
+  useShader(shader, uniform, update, fps = 30) {
+    let loopFn
+    if (update) {
+      loopFn = (i, clock) => {
+        const uniform = this.three.uniforms;
+        update(uniform, clock)
+      }
+    } else {
+      loopFn = this.three.updateShaderDefault.bind(this.three);
+    }
+    this.three.createShader(shader, uniform)
+    this.loop = loopFn;
+    this.loopInterval = fps;
   }
 
   get width() {
@@ -161,6 +176,13 @@ class Scene extends EventEmitter {
     return this._matter;
   }
 
+  get user() {
+    if (!this._user) {
+      this._user = new UserInputModule();
+      this.add(this._user)
+    }
+    return this._user;
+  }
 }
 
 function createScene(options) {

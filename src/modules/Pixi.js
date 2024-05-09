@@ -1,7 +1,8 @@
-import { Application, Assets, BitmapText, TextStyle, Text, Cache } from '@pixi/node';
+import { Application, Assets, BitmapText, TextStyle, Text, Cache, utils } from '@pixi/node';
 import path from 'path';
 import Display from '../Display.js';
 import appRoot from 'app-root-path';
+
 
 const fonts = [
   { 
@@ -135,10 +136,18 @@ export default class PixiModule {
 
   destroy() {
     // Assets.unload(this.fontPaths)
+    PixiModule.removeAllTextures();
+    Assets.reset();
     this.textView = null;
     this.isFontLoaded = false;
-    Cache.reset();
     this.app.destroy();
+  }
+
+  static removeAllTextures() {
+    for (const key in utils.TextureCache) {
+      const texture = utils.TextureCache[key];
+      texture.destroy(true);
+    }
   }
 
   render() {

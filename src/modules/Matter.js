@@ -54,6 +54,8 @@ export default class MatterModule {
   }
 
   async load() {
+    if (this.isLoaded) return
+
     this._initMatter()
     this._setupDefaultBodies();
 
@@ -70,6 +72,10 @@ export default class MatterModule {
 
   render(data) {
     Engine.update(this.engine, this.options.tickRate); 
+  }
+
+  get isLoaded() {
+    return this.engine !== undefined
   }
 
   destroy() {

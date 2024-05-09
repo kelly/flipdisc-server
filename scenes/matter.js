@@ -1,7 +1,6 @@
 import Scene from '../src/Scene.js';
 import Matter from "matter-js";
 
-
 const defaults = {
   maxBodies: 100,
   friction: 0.1,
@@ -45,14 +44,14 @@ const schema = {
   }
 }
 
-const matter = function(options) {
-  options = { ...defaults, ...options };
-  const { maxBodies, friction, restitution, size, hasWalls } = options;
+const matter = function(props) {
+  props = { ...defaults, ...props };
+  const { maxBodies, friction, restitution, size, hasWalls } = props;
 
   const scene = new Scene()
   const bodies = [];
   const { Bodies } = Matter;
-  const ballOptions = {
+  const ballprops = {
     restitution,
     friction,
     render: {
@@ -62,18 +61,19 @@ const matter = function(options) {
   
   var boundAngle = Math.PI / 12;
   
-  var boxA = Bodies.circle(5, 0, 5, { ...ballOptions, mass: 5 });
-  var boxB = Bodies.circle(10, 0, 5, { ...ballOptions, mass: 5 });
+  var boxA = Bodies.circle(5, 0, 5, { ...ballprops, mass: 5 });
+  var boxB = Bodies.circle(10, 0, 5, { ...ballprops, mass: 5 });
   
   scene.on('loaded', () => {
     scene.matter.add([boxA, boxB]);
     if (hasWalls)
       scene.matter.addWalls()
   })
+  
   scene.loop = (i) => {
     const s = parseInt(Math.random() * size) + 1;
     if (i % 5 === 0) {
-      const circle = Bodies.circle(0, 0, s, { ...ballOptions, mass: 0.1 });
+      const circle = Bodies.circle(0, 0, s, { ...ballprops, mass: 0.1 });
       bodies.push(circle)
       if (bodies.length > maxBodies) { 
         const old = bodies.shift();

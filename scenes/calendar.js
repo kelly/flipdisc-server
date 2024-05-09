@@ -8,6 +8,7 @@ const schema = {
 
 const calendar = function() {
 
+
   function drawCalendar() {
     const graphics = new Graphics();
     graphics.beginFill(0xFFFFFF);

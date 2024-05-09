@@ -1,29 +1,55 @@
+// Import the raf function from the RAF library
 import * as THREE from 'three';
+import raf from 'raf';
 
-const tickerDefaults = {
-  interval: 10,
+const defaults = {
+  fps: 30,
   autoClear: true,
   autoStart: true
 }
 
-export function ticker(animationFunction, interval = tickerDefaults.interval) {
-  let tickerInterval = null;
-  let clock = new THREE.Clock();
+
+export function ticker(animationFunction, fps = defaults.fps) {
+  const interval = 1000 / fps; 
   let isPlaying = false;
   let i = 0;
+  let startTime;
+  let animationId;
+  let clock = new THREE.Clock();
+
+  function animate(timestamp) {
+    if (!startTime) {
+      startTime = timestamp;
+    }
+
+    // const elapsedTime = timestamp - startTime;
+
+    animationFunction(i++, clock);
+
+    const nextFrameTime = startTime + (i * interval);
+    const delay = Math.max(0, nextFrameTime - timestamp);
+
+    animationId = setTimeout(() => {
+      animationId = raf(animate);
+    }, delay);
+  }
 
   function start() {
-    if (isPlaying) return;
-    isPlaying = true;
-    tickerInterval = setInterval(() => {
-      animationFunction(i++, clock);
-    }, interval);
-}
+    if (!isPlaying) {
+      clock.start();
+      isPlaying = true;
+      startTime = null;
+      i = 0;
+      animate(performance.now());
+    }
+  }
 
   function stop() {
-    if (!isPlaying) return;
-    isPlaying = false;
-    clearInterval(tickerInterval);
+    if (isPlaying) {
+      isPlaying = false;
+      clock.stop();
+      clearTimeout(animationId);
+    }
   }
 
   start();
@@ -34,6 +60,3 @@ export function ticker(animationFunction, interval = tickerDefaults.interval) {
     isPlaying
   };
 }
-
-
-

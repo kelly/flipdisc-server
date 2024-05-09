@@ -54,4 +54,12 @@ function formatRGBAPixels(imageData, width, height) {
   return pixelArray;
 }
 
-export { dither, isImageData, formatRGBAPixels }
+function createEmptyImageData(width, height) {
+  let imageData = new Array(height);
+  for (let i = 0; i < height; i++) {
+    imageData[i] = new Array(width).fill(0); // Each column gets its own array of rows
+  }
+  return imageData;
+}
+
+export { dither, isImageData, formatRGBAPixels, createEmptyImageData }

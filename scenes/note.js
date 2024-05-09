@@ -21,12 +21,12 @@ const schema = {
   }
 }
 
-const note = async function(options) {
-  const { text, fontName } = options; 
+const note = async function(props) {
+  props = { ...defaults, ...props };
+  const { text, fontName } = props; 
   const scene = new Scene();
   scene.loadFonts();
   scene.once('loaded', () => {
-    
     scene.pixi.setText(text, 0, 0, {
       fontName
     })

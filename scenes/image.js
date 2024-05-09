@@ -20,7 +20,6 @@ const image = async function(options) {
   let sprite;
   options = { ...defaults, ...options };
   const { url } = options;
-
   const texture = await Assets.load(url);
 
   const scene = new Scene({
@@ -38,7 +37,7 @@ const image = async function(options) {
   })
 
   scene.once('unload' , () => {
-    Assets.unload(url);
+    texture.destroy(true)
   })
 
   // scene.loop = (i) => {
