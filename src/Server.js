@@ -39,6 +39,7 @@ const createServer = async (options) => {
   app.post('/api/playing/pause', API.postPlayingPause)
   app.post('/api/playing/resume', API.postPlayingResume)
   app.post('/api/playing/toggle', API.postPlayingToggle)
+  app.post('/api/playing/user/clear', API.postPlayingUserClear)
   app.get('/api/playing', API.getPlaying)
 
   // display

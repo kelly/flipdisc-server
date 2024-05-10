@@ -1,7 +1,8 @@
-import { Application, Assets, BitmapText, TextStyle, Text, Cache, utils } from '@pixi/node';
+import { Application, Assets, BitmapText, TextStyle, Text, Texture, Cache, Sprite, utils, BaseTexture } from '@pixi/node';
 import path from 'path';
 import Display from '../Display.js';
 import appRoot from 'app-root-path';
+import { isValidURL } from '../../utils/general.js';
 
 
 const fonts = [
@@ -38,6 +39,11 @@ export default class PixiModule {
       await Assets.init()
       return Assets.load(this.fontPaths)
     }
+    this.app();
+  }
+
+  async loadAsset(url) {
+    return await Assets.load(url)
   }
 
   get hasLoadedFonts() {
@@ -67,11 +73,33 @@ export default class PixiModule {
     return fonts.find(font => font.name === name)
   }
 
+  _createCenteredSprite(texture) {
+    const { width, height } = Display.size()
+    const sprite = Sprite.from(texture)
+    sprite.anchor.set(0.5);
+    sprite.x = width / 2;
+    sprite.y = height / 2;
+
+    return sprite;
+  }
+
+  _textureFromData(data) {
+    const baseTexture = BaseTexture.from(data)
+    return new Texture(baseTexture)
+  }
+
+  async createImage(image) {
+    const texture  = isValidURL(image) ? await this.loadAsset(image) : this._textureFromData(image)
+    const sprite = this._createCenteredSprite(texture)
+    this.add(sprite)
+
+    return sprite;
+  }
+
   _createBitmapText(text, options) {
     const { width } = Display.size()
     const { fontName, fill, maxWidth = width } = options
     const font = this._bitmapFontForName(fontName)
-    console.log(font)
     return new BitmapText(text, {
       fontFamily: font.name,
       fontName: font.name,

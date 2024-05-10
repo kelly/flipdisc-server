@@ -1,6 +1,6 @@
 
 const defaults = { 
-  duration: '15 minutes',
+  duration: 1, // minutes
   shouldLoop: true
 }
 
@@ -20,9 +20,7 @@ export default class SceneQueue  {
 
   add(item) {
     if (item.id === undefined) return;
-    if (item.duration === undefined) {
-      item.duration = this.defaultDuration;
-    }
+    item.duration = item.duration || this.defaultDuration;
     this.getItem(item) ? this.update(item) : this.items.push(item);
     return item;
   }
@@ -40,7 +38,7 @@ export default class SceneQueue  {
 
   loopQueueIfNeeded(item) {
     // only loop items don't specify a duration
-    if (this.shouldLoop && item.duration == this.defaultDuration) {
+    if (this.shouldLoop && item.duration === this.defaultDuration) {
       this.add(item)
     }
   }
@@ -55,6 +53,13 @@ export default class SceneQueue  {
     const item = this.items.shift();
     this.loopQueueIfNeeded(item); 
     return item;    
+  }
+
+  nextAt(idx) {
+    // reshuffle items so idx is at the front and return item
+    const items = this.items.splice(idx).concat(this.items)
+    this.items = items;
+    return this.next();
   }
 
   remove(id) {

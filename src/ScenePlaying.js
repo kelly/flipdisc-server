@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import later from '@breejs/later';
+import { createTimer } from '../utils/timer.js';
 
 export default class Playing extends EventEmitter {
   
@@ -21,15 +21,11 @@ export default class Playing extends EventEmitter {
     this.props = props;
     this.duration = duration;
 
-    try {
-      await this._setup(scene, props);
-    } catch (e) {
-      this.emit('error', e);
-    }
+    await this._setup(scene, props);
 
     this.isLoaded = await this.load()
 
-    duration ? this.playFor(duration) : this.play();
+    duration !== undefined ? this.playFor(duration) : this.play();
 
     return this
   }
@@ -39,23 +35,28 @@ export default class Playing extends EventEmitter {
   }
 
   async _setup(scene, props) {
-    this.scene = await scene(props)
+    try {
+      this.scene = await scene(props)
+    } catch (e) {
+      console.error('Error setting up scene', e)
+      this.emit('finished')
+      return;
+    }
     this.scene.on('update', (data) => {
       this.emit('update', data);
     });
   }
 
   playFor(duration) {
-    const time = later.parse.text(duration);
     this.play();
-    this.timer = later.setTimeout(() => {
+    this.timer = createTimer(() => {
       this.stop();
       this.emit('finished')
-    }, time)  
+    }, duration);
   }
 
   play() {
-    this.scene.play();
+    this.scene?.play();
     this.isPlaying = true;
   }
 
@@ -64,17 +65,20 @@ export default class Playing extends EventEmitter {
   }
 
   stop() {
-    this.scene.stop();
+    this.scene?.stop();
+    this.timer?.pause();
     this.isPlaying = false;
   }
 
   resume() {
     this.isPlaying = true;
-    this.scene.resume();
+    this.timer?.resume();
+    this.scene?.resume();
   }
 
   cleanupScene() {
-    clearTimeout(this.timer);
+    this.timer?.clear();
+    this.timer = null;
     this.isPlaying = false;
     this.scene?.destroy();
     this.scene = null;
@@ -95,6 +99,7 @@ export default class Playing extends EventEmitter {
       schema: this.schema || {},
       id: this.schema?.id,
       props: this.props || {},
+      timeRemaining: this.timer?.getTimeRemaining(),
       isStatic: this.scene?.isStatic,
       duration: this.duration
     }

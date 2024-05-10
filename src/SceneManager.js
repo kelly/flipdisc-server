@@ -42,7 +42,20 @@ export default class SceneManager {
 
   async play(item) {
     item.sceneObj = this.getScene(item.id)
+    item.duration = this.configureDuration(item)
     return this.playing.set(item)
+  }
+
+  configureDuration(item) {
+    if (item.duration !== undefined) {
+      return item.duration;
+    }
+
+    if (this.queue.hasItems) {
+      return this.queue.defaultDuration;
+    }
+
+    return undefined; 
   }
 
   getScene(idx) {

@@ -23,7 +23,7 @@ const clock = function() {
   // scene.loadFonts();
   scene.useLoop(i => {
     const date = new Date();
-    const hours = padded(date.getHours());
+    const hours = date.getHours();
     const minutes = padded(date.getMinutes());
     const time = `${hours}:${minutes}`;
 

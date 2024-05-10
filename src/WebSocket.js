@@ -1,13 +1,28 @@
 import WebSocket from 'ws';
 import SceneManager from './SceneManager.js';
+import { prepare, decode } from '../utils/message.js';
 
 let wss 
 let socket
 
-const send = (imageData) => {
-  const buffer = new Int8Array(imageData.flat());  
+const send = (buffer) => {
   socket.send(buffer, { binary: true })
 }
+
+const prepareLiveSceneMessage = (imageData, info) => {
+  const msgName = 'LiveScene'
+  const buffer = new Int8Array(imageData.flat()); 
+  const { id, isPlaying, timeRemaining } = info
+  const payload = {
+    id,
+    isPlaying,
+    timeRemaining,
+    imageData: buffer
+  }
+  const data = prepare(payload, msgName)
+  if (data) send(data)
+}
+
 
 const receive = (message) => {
   const manager = SceneManager.sharedInstance();
@@ -34,7 +49,9 @@ const startWebsocket = (port = 7071) => {
 
     ws.on('message', receive);
     manager.playing.removeListener('update', send) // just in case, remove any existing listeners
-    manager.playing.on('update', send)
+    manager.playing.on('update', (imageData) => {
+      prepareLiveSceneMessage(imageData, manager.playing.info)
+    })
   })
   
   wss.on('close', () => {

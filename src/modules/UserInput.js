@@ -57,7 +57,6 @@ export default class UserInputModule {
     // const col = parseInt(point[0])
 
     // this.imageData[col][row] = 1
-    // modify this to update all the pixels in imageData that are within the size of the touch
 
     const { point, size } = touch
     const row = parseInt(point[1])
@@ -76,6 +75,13 @@ export default class UserInputModule {
         }
       }
     }
+  }
+
+  clear() {
+    const { width, height } = Display.size()
+    this.touches = []
+    this.imageData = createEmptyImageData(width, height)
+    this.isEnd = 0
   }
 
   render() {

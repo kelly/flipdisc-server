@@ -17,6 +17,7 @@ class Scene extends EventEmitter {
     super();
     const { width, height } = Display.size()
     this.options = { ...defaultOptions, ...options }; 
+    this.loop = null;
     this.loopInterval = this.options.loopInterval;
     this.shouldAutoRender = this.options.shouldAutoRender;
     this.canvas = createCanvas(width, height)
@@ -39,34 +40,53 @@ class Scene extends EventEmitter {
     return this.modules.map((m) => m.render ? m.render() : null).filter((l) => l) || []
   }
 
+  _stopAllModules() {
+    this.modules.forEach((m) => m.stop === 'function' && m.stop())
+  }
+
+  _resumeAllModules() {
+    this.modules.forEach((m) => m.resume === 'function' && m.resume())
+  }
+
   _mergeLayers(layers) {
-    layers = layers.map((l) => {
+    layers = layers.filter((l) => l).map((l) => {
       return isImageData(l) ? formatRGBAPixels(l, this.width, this.height) : l
     })
-    return Utils.mergeFrames(layers)
+    
+    return layers ? Utils.mergeFrames(layers) : null;
   }
 
   _render(inputData) {
+    if (!this.canvas) {
+      // this should only happen in a weird loading state
+      this.renderOnNextTickData = inputData
+      this.shouldRenderOnTick = true
+    }
     const layers = this._renderModules()
     if (inputData) 
       layers.push(inputData)
     
     layers.push(this.imageData)
     const data = this._mergeLayers(layers)
-    this.emit('update', data)
+    if (data) this.emit('update', data)
+  }
+
+  _renderBuffer() {
+    this._render(this.renderOnNextTickData)
+    this.shouldRenderOnTick = false
+    this.renderOnNextTickData = null
   }
 
   render(inputData) {
-    if (!this.stopped && this.ticker && this.shouldAutoRender) return; // we'll just render it on the next tick
-    this._render(inputData)
+    this.shouldRenderOnTick = true
+    this.renderOnNextTickData = inputData
   }
 
   play() {
     const tick = this.tick.bind(this);
     const loopInterval = this.loopInterval;
-
-    if (this.loop) 
-      this.ticker = ticker(tick, loopInterval)
+    if (this.ticker) this.ticker.stop();
+    this.ticker = ticker(tick, loopInterval)
   }
 
   add(module) {
@@ -76,22 +96,25 @@ class Scene extends EventEmitter {
 
   tick(i, clock) {
     this.emit('tick')
-    if (this.loop) this.loop(i, clock)
-    if (this.shouldAutoRender) this._render()
+
+    if (this.shouldRenderOnTick) {
+      this._renderBuffer()
+    } else if (this.loop) {
+      this.loop(i, clock) 
+      if (this.shouldAutoRender) this._render()
+    }
   }
 
   stop() {
     this.stopped = true
-    // todo: stop all modules
-    if (this.ticker) 
-      this.ticker.stop();
+    this._stopAllModules()
+    if (this.ticker) this.ticker.stop();
   }
 
   resume() {
     this.stopped = false
-    // todo: resume all modules
-    if (this.ticker) 
-      this.ticker.start()
+    this._resumeAllModules();
+    if (this.ticker) this.ticker.start()
   }
 
   useLoop(loop, interval = this.loopInterval) {
@@ -114,6 +137,14 @@ class Scene extends EventEmitter {
     this.loopInterval = fps;
   }
 
+  async useImage(image) {
+    try {
+      await this.pixi.createImage(image)
+    } catch (e) {
+      console.error('Error creating image', e)
+    }
+  }
+ 
   get width() {
     return this.canvas.width;
   }
@@ -123,7 +154,8 @@ class Scene extends EventEmitter {
   }
 
   get imageData() {
-    return this.canvas.toBuffer('raw')
+    // For some reason sometime canvas is null here. How do we want to handle that?
+    return this.canvas?.toBuffer('raw')
   }
 
   get stage() {

@@ -33,6 +33,7 @@ function getLuminanceRGB(r, g, b) {
 }
 
 function isImageData(data) {
+  if (!data) return false;
   return !Array.isArray(data[0])
 }
 
@@ -56,7 +57,7 @@ function formatRGBAPixels(imageData, width, height) {
 
 function createEmptyImageData(width, height) {
   let imageData = new Array(height);
-  for (let i = 0; i < height; i++) {
+  for (let i = 0; i < height;  i++) {
     imageData[i] = new Array(width).fill(0); // Each column gets its own array of rows
   }
   return imageData;

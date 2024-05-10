@@ -34,11 +34,19 @@ const getPlaying = async (c) => {
   return c.json(manager.playing.info)
 }
  
+const postPlayingUserClear = async (c) => {
+  const manager = SceneManager.sharedInstance();
+  manager.playing.scene?.user.clear()
+  manager.playing.scene?.render();
+
+  return c.status(200)
+}
 
 export {
   postPlaying,
   postPlayingPause,
   postPlayingResume,
   postPlayingToggle,
+  postPlayingUserClear,
   getPlaying
 }

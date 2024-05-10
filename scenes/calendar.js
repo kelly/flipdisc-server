@@ -27,7 +27,7 @@ const calendar = function() {
   scene.on('loaded', () => {
     const cal = drawCalendar()
     scene.pixi.add(cal);
-    scene.render()
+    setTimeout(() => { scene.render() }, 10)
   })
 
   return scene;

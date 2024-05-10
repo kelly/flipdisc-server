@@ -4,6 +4,7 @@ import {
   postPlayingPause,
   postPlayingResume,
   postPlayingToggle,
+  postPlayingUserClear,
   getPlaying } from './playing.js'
 import { 
   getSceneByID,
@@ -29,6 +30,7 @@ const API = {
   postPlayingPause,
   postPlayingResume,
   postPlayingToggle,
+  postPlayingUserClear,
   getPlaying,
   getQueue,
   getQueueSettings,

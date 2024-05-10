@@ -22,9 +22,8 @@
     "hono": "^4.2.1",
     "matter-js": "^0.19.0",
     "node-canvas-webgl": "^0.3.0",
-    "q5": "file:../q5.js",
+    "protobufjs": "^7.3.0",
     "raf": "^3.4.1",
-    "request-animation-frame-polyfill": "^1.1.2",
     "three": "^0.162.0",
     "workerpool": "^9.1.1",
     "zeromq": "^6.0.0-beta.19"

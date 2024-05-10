@@ -74,6 +74,14 @@ export default class MatterModule {
     Engine.update(this.engine, this.options.tickRate); 
   }
 
+  resume() {
+    Render.run(this.renderer);
+  }
+
+  stop() {
+    Render.stop(this.renderer);
+  }
+
   get isLoaded() {
     return this.engine !== undefined
   }
