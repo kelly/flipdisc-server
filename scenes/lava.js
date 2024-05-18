@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Scene from '../src/Scene.js';
 import { MarchingCubes } from 'three/addons/objects/MarchingCubes.js'
+import TextView from '../src/views/TextView.js';
 
 const defaults = {
   blobCount: 5
@@ -26,7 +27,6 @@ const lava = function(props) {
   const { blobCount } = props;
 
   const scene = new Scene();
-
 
   let time = 0;
   let effect = null;
@@ -58,15 +58,16 @@ const lava = function(props) {
 
   scene.on('loaded', () => {
     effect = createEffect();
+    const textview = new TextView('Lava', { fontName: 'Futura', fontSize: 28})
+    scene.add(textview)
     scene.three.add(effect);
   })
 
   scene.useLoop((i, clock) => {
     const delta = clock.getDelta();
     time += delta * 1.0 * 0.5;
-    scene.pixi.setText('Kelly', 0, 0, { fontName: 'Futura', fontSize: 28})
     updateCubes(effect, time, blobCount);
-  }, 30)
+  }, 35)
 
   return scene;
 }

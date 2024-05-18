@@ -2,10 +2,8 @@ import { Hono } from 'hono'
 import { serve } from "@hono/node-server";
 import API from './api/index.js';
 import SceneManager from './SceneManager.js'
-import SceneTaskManager from './SceneTaskManager.js';
+import SceneTaskManager from './TaskManager.js';
 import { startWebsocket } from './WebSocket.js';
-
-let app;
 
 const defaults = {
   port: 3000,

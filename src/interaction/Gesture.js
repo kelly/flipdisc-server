@@ -2,13 +2,16 @@ import MotionEmitter from "./Motion.js";
 import appRoot from 'app-root-path';
 import path from 'path';
 import Display from '../Display.js';
+import Module from '../modules/Module.js';
 
 const file = path.join(appRoot.path, './scripts/gesture.py')
 const model = path.join(appRoot.path, './resources/models/gesture_recognizer.task')
 
-export default class GestureEmitter {
+// TODO: refactor to fix class
+export default class GestureEmitter extends Module {
 
   constructor() {
+    super()
     const { width, height } = Display.size()
 
     const script = {

@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import appRoot from 'app-root-path';
-import SceneImport from './SceneImport.js';
+import SceneImport from './Import.js';
 import SceneManager from './SceneManager.js';
 
 export default class SceneImporter {
@@ -59,7 +58,8 @@ export default class SceneImporter {
   }
 
   get dir() {
-    return path.join(appRoot.path, this._dir);
+    const rootPath = process.cwd();
+    return path.join(rootPath, this._dir);
   }
 
 }

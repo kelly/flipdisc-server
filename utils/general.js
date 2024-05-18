@@ -7,4 +7,8 @@ function isValidURL(string) {
   }
 }
 
-export { isValidURL }
+function urlExtension(url) {
+  url.match(/\.([^\./\?]+)($|\?)/)?.[1]
+}
+
+export { isValidURL, urlExtension}

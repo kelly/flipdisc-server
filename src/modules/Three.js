@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import Display from '../Display.js';
+import Module from './Module.js';
+import { createCanvas } from 'node-canvas-webgl'
 
 const defaultOptions = {
 
@@ -23,9 +25,10 @@ const DEFAULT_FRAGMENT_SHADER = `
 
 let width, height, aspect;
 
-export default class ThreeModule {
+export default class ThreeModule extends Module {
 
   constructor(canvas, options = {}) {
+    super();
     this.canvas = canvas;
     this.options = { ...defaultOptions, ...options };
 
@@ -102,6 +105,10 @@ export default class ThreeModule {
 
   get isLoaded() {
     return this.renderer !== undefined
+  }
+
+  static isValidInstance(view) {
+    return view instanceof THREE.Object3D
   }
 
   destroy() {

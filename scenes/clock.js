@@ -1,5 +1,5 @@
 import Scene from '../src/Scene.js';
-import createTask from '../src/SceneTask.js';
+import createTask from '../src/Task.js';
 
 const schema = {
   title: 'Clock',
@@ -27,7 +27,7 @@ const clock = function() {
     const minutes = padded(date.getMinutes());
     const time = `${hours}:${minutes}`;
 
-    scene.pixi.setText(time, 0, 0, { fontName: 'Futura', fontSize: 28})
+    scene.pixi.setText({text: time, x: 0, y: 0, fontName: 'Futura', fontSize: 28})
 
   }, 1/6) 
 

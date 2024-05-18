@@ -70,7 +70,7 @@ const matter = function(props) {
       scene.matter.addWalls()
   })
   
-  scene.loop = (i) => {
+  scene.useLoop((i, clock) => {
     const s = parseInt(Math.random() * size) + 1;
     if (i % 5 === 0) {
       const circle = Bodies.circle(0, 0, s, { ...ballprops, mass: 0.1 });
@@ -81,7 +81,7 @@ const matter = function(props) {
       }
       scene.matter.add(circle)
     }
-  }
+  }, 50)
   return scene;
 }
 

@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
 import { createTimer } from '../utils/timer.js';
+import Display from './Display.js';
 
 export default class Playing extends EventEmitter {
   
@@ -44,6 +45,7 @@ export default class Playing extends EventEmitter {
     }
     this.scene.on('update', (data) => {
       this.emit('update', data);
+      Display.sharedInstance().send(data);
     });
   }
 

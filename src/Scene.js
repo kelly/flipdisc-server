@@ -2,149 +2,148 @@ import EventEmitter from 'events';
 import { createCanvas } from 'node-canvas-webgl';
 import Display from './Display.js';
 import { ticker } from '../utils/animation.js';
-import { PixiModule, ThreeModule, MatterModule, UserInputModule } from './modules/index.js';
-import { Utils } from 'flipdisc'
+import { PixiModule, ThreeModule, MatterModule, UserInputModule, Module } from './modules/index.js';
+import  * as modules from './modules/index.js';
+import { Utils } from 'flipdisc';
 import { isImageData, formatRGBAPixels } from '../utils/Image.js';
+
+
 
 const defaultOptions = {
   shouldAutoRender: true,
-  loopInterval: 30
-}
+  loopFps: 30
+};
 
 class Scene extends EventEmitter {
-
   constructor(options = {}) {
     super();
-    const { width, height } = Display.size()
-    this.options = { ...defaultOptions, ...options }; 
-    this.loop = null;
-    this.loopInterval = this.options.loopInterval;
+    const { width, height } = Display.size();
+    this.options = { ...defaultOptions, ...options };
+    this.loopFps = this.options.loopFps;
     this.shouldAutoRender = this.options.shouldAutoRender;
-    this.canvas = createCanvas(width, height)
-    this.modules = []
+    this.lastRenderData = null;
+    this.canvas = createCanvas(width, height);
+    this.modules = [];
+    this.loops = [];
   }
 
   async load() {
-    const promise = await Promise.all(this.modules.map((m) => m.load()))
-    this.emit('loaded')
-
+    const promise = await Promise.all(this.modules.map((m) => m.load()));
+    this.emit('loaded');
     return promise;
   }
 
-  loadFonts() {
-    // do this another way
-    const text = this.text;
-  }
-
   _renderModules() {
-    return this.modules.map((m) => m.render ? m.render() : null).filter((l) => l) || []
+    return this.modules.map((m) => (m.render ? m.render() : null)).filter((l) => l) || [];
   }
 
   _stopAllModules() {
-    this.modules.forEach((m) => m.stop === 'function' && m.stop())
+    this.modules.forEach((m) => typeof m.stop === 'function' && m.stop());
   }
 
   _resumeAllModules() {
-    this.modules.forEach((m) => m.resume === 'function' && m.resume())
+    this.modules.forEach((m) => typeof m.resume === 'function' && m.resume());
   }
 
   _mergeLayers(layers) {
-    layers = layers.filter((l) => l).map((l) => {
-      return isImageData(l) ? formatRGBAPixels(l, this.width, this.height) : l
-    })
-    
+    layers = layers.filter((l) => l).map((l) => (isImageData(l) ? formatRGBAPixels(l, this.width, this.height) : l));
     return layers ? Utils.mergeFrames(layers) : null;
   }
 
   _render(inputData) {
-    if (!this.canvas) {
-      // this should only happen in a weird loading state
-      this.renderOnNextTickData = inputData
-      this.shouldRenderOnTick = true
+    if (!this.canvas) return;
+    const data = this._mergeLayers([...this.moduleImageData, inputData, this.imageData]);
+    if (this._isNewImageData(data)) {
+      this.emit('update', data);
+      this.lastRenderData = data;
     }
-    const layers = this._renderModules()
-    if (inputData) 
-      layers.push(inputData)
-    
-    layers.push(this.imageData)
-    const data = this._mergeLayers(layers)
-    if (data) this.emit('update', data)
   }
 
   _renderBuffer() {
-    this._render(this.renderOnNextTickData)
-    this.shouldRenderOnTick = false
-    this.renderOnNextTickData = null
+    this._render(this.renderBuffer);
+    this.shouldRenderOnTick = false;
+    this.renderBuffer = null;
   }
 
   render(inputData) {
-    this.shouldRenderOnTick = true
-    this.renderOnNextTickData = inputData
+    this.shouldRenderOnTick = true;
+    this.renderBuffer = inputData;
+  }
+
+  _renderIfNeeded() {
+    if (this.shouldRenderOnTick) 
+      return this._renderBuffer();
+
+    if (this.shouldAutoRender && this.loops.length > 0) 
+      this._render();
   }
 
   play() {
     const tick = this.tick.bind(this);
-    const loopInterval = this.loopInterval;
-    if (this.ticker) this.ticker.stop();
-    this.ticker = ticker(tick, loopInterval)
+    this.ticker?.stop();
+    this.ticker = ticker(tick, 1000 / this.loopFps);
   }
 
-  add(module) {
-    // check to make sure is type of module
-    this.modules.push(module)
+  addModule(module) {
+    if (module instanceof Module || module instanceof EventEmitter) {
+      return this.modules.push(module);
+    }
+  }
+
+  add(view) {
+    return this.moduleForView(view)?.add(view);
+  }
+
+  remove(view) {
+    return this.moduleForView(view)?.remove(view);
   }
 
   tick(i, clock) {
-    this.emit('tick')
-
-    if (this.shouldRenderOnTick) {
-      this._renderBuffer()
-    } else if (this.loop) {
-      this.loop(i, clock) 
-      if (this.shouldAutoRender) this._render()
-    }
+    const now = Date.now();
+    this.loops.forEach(loop => {
+      if (now - loop.lastExecution >= 1000 / loop.fps) {
+        loop.fn(i, clock);
+        loop.lastExecution = now;
+      }
+    });
+    this._renderIfNeeded()
   }
 
   stop() {
-    this.stopped = true
-    this._stopAllModules()
-    if (this.ticker) this.ticker.stop();
+    this.stopped = true;
+    this._stopAllModules();
+    this.ticker?.stop();
   }
 
   resume() {
-    this.stopped = false
+    this.stopped = false;
     this._resumeAllModules();
-    if (this.ticker) this.ticker.start()
+    this.ticker?.start();
   }
 
-  useLoop(loop, interval = this.loopInterval) {
-    this.loop = loop;
-    this.loopInterval = interval;
+  useLoop(fn, fps = this.loopFps) {
+    this.loops.push({ fn, fps, lastExecution: 0 });
   }
 
-  useShader(shader, uniform, update, fps = 30) {
-    let loopFn
-    if (update) {
-      loopFn = (i, clock) => {
-        const uniform = this.three.uniforms;
-        update(uniform, clock)
-      }
-    } else {
-      loopFn = this.three.updateShaderDefault.bind(this.three);
-    }
-    this.three.createShader(shader, uniform)
-    this.loop = loopFn;
-    this.loopInterval = fps;
+  useShader(shader, uniform, update, fps = 50) {
+    const loopFn = update
+      ? (i, clock) => {
+          const uniform = this.three.uniforms;
+          update(uniform, clock);
+        }
+      : this.three.updateShaderDefault.bind(this.three);
+    this.three.createShader(shader, uniform);
+    this.useLoop(loopFn, fps);
   }
 
   async useImage(image) {
     try {
-      await this.pixi.createImage(image)
+      await this.pixi.createImage(image);
     } catch (e) {
-      console.error('Error creating image', e)
+      console.error('Error creating image', e);
     }
   }
- 
+
   get width() {
     return this.canvas.width;
   }
@@ -154,12 +153,11 @@ class Scene extends EventEmitter {
   }
 
   get imageData() {
-    // For some reason sometime canvas is null here. How do we want to handle that?
-    return this.canvas?.toBuffer('raw')
+    return this.canvas?.toBuffer('raw');
   }
 
   get stage() {
-    return this.pixi.stage
+    return this.pixi.stage;
   }
 
   get isStatic() {
@@ -167,35 +165,46 @@ class Scene extends EventEmitter {
   }
 
   destroy() {
-    this.emit('unload')
-    
+    this.emit('unload');
     this.stop();
-    this.modules.forEach(m =>  m.destroy())
+    this.modules.forEach((m) => m.destroy());
     this.removeAllListeners();
     this.ticker = null;
     this.canvas = null;
-    this.loop = null
+    this.loop = null;
     this.modules = [];
   }
 
-  // simple getters for dealing with commonly used modules
+  moduleForView(v) {
+    const module =  Object.values(modules).find((m) => {
+      if (typeof m.isValidInstance === 'function') {
+        return m.isValidInstance(v)
+      }
+    });
+    return this.findOrCreateModule(module);
+  }
+
+  findOrCreateModule(c) {
+    let m = this.modules.find((m) => m instanceof c);
+    if (!m) {
+      m = new c();
+      this.addModule(m)
+    }
+    return m;
+  }
 
   get three() {
     if (!this._three) {
       this._three = new ThreeModule(this.canvas);
-      this.add(this._three)
+      this.addModule(this._three);
     }
     return this._three;
   }
 
-  get text() {
-    return this.pixi;
-  }
-
   get pixi() {
-    if (!this._pixi) {
-      this._pixi = new PixiModule();
-      this.add(this._pixi)
+;    if (!this._pixi) {
+      this._pixi = new PixiModule(this.canvas);
+      this.addModule(this._pixi);
     }
     return this._pixi;
   }
@@ -203,7 +212,7 @@ class Scene extends EventEmitter {
   get matter() {
     if (!this._matter) {
       this._matter = new MatterModule(this.canvas);
-      this.add(this._matter)
+      this.addModule(this._matter);
     }
     return this._matter;
   }
@@ -211,14 +220,27 @@ class Scene extends EventEmitter {
   get user() {
     if (!this._user) {
       this._user = new UserInputModule();
-      this.add(this._user)
+      this.addModule(this._user);
     }
     return this._user;
+  }
+
+  get context() {
+    return this.canvas.getContext('2d');
+  }
+
+  get moduleImageData() {
+    return this._renderModules();
+  }
+
+  _isNewImageData(data) {
+    if (!this.lastRenderData) return true;
+    return !Utils.areArraysEqual(data, this.lastRenderData);
   }
 }
 
 function createScene(options) {
-  return new Scene(options)
+  return new Scene(options);
 }
 
-export { Scene as default, createScene }
+export { Scene as default, createScene };

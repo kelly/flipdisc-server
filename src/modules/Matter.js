@@ -1,5 +1,6 @@
 import Matter from 'matter-js';
 import Display from '../Display.js';
+import Module from './Module.js';
 
 var { Engine, Render, Bodies, Composite, World } = Matter;
 
@@ -8,9 +9,10 @@ const defaultOptions = {
   tickRate: 4,
 }
 
-export default class MatterModule {
+export default class MatterModule extends Module {
 
   constructor(canvas, options = {}) {
+    super();
     this.options = { ...defaultOptions, ...options }
     this.canvas = canvas;
 
@@ -70,7 +72,7 @@ export default class MatterModule {
     return Composite.remove(this.engine.world, bodies)
   }
 
-  render(data) {
+  render() {
     Engine.update(this.engine, this.options.tickRate); 
   }
 
@@ -84,6 +86,10 @@ export default class MatterModule {
 
   get isLoaded() {
     return this.engine !== undefined
+  }
+
+  static isValidInstance(view) {
+    return view?.inverseInertia !== undefined
   }
 
   destroy() {

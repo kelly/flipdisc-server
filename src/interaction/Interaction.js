@@ -16,6 +16,8 @@ export default class InteractionEmitter extends EventEmitter {
   }
 
   _run(script) {
+    process.removeAllListeners()
+  
     if (!fs.existsSync(script.file) && script.file) {
       throw new Error('Script file does not exist');
     }
@@ -32,6 +34,7 @@ export default class InteractionEmitter extends EventEmitter {
         this._run(script);
       }
     });
+    
     process.once('exit', () => this.process.kill());
   }
 

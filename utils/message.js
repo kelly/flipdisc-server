@@ -14,7 +14,7 @@ const schema = {
       fields: {
         point: { type: 'bytes', id: 1 },
         size: { type: 'int32', id: 2 },
-        isNew: { type: 'bool', id: 3 }
+        isEnd: { type: 'bool', id: 3 }
       }
     },
   }

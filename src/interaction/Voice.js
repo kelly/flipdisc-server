@@ -1,16 +1,18 @@
 import InteractionManager from './Interaction.js';
 import appRoot from 'app-root-path';
 import path from 'path';
+import Module from '../modules/Module.js';
 
 const model = path.join(appRoot.path, './resources/models/ggml-small.en.bin')
 const voiceDefaultOptions = {
   triggerWord: 'flip'
 }
 
-class VoiceInteractionManager {
+class VoiceInteractionManager extends Module {
   // args: ['-m', '../resources/models/ggml-small.en.bin', '-t', '6', '--step', '0', '--length', '30000', '-vth', '0.6']
 
   constructor(options) {
+    super()
     options = { ...voiceDefaultOptions, ...options }
     const script = {
       channel: 'ipc:///tmp/voice-data',

@@ -1,4 +1,3 @@
-// Import the raf function from the RAF library
 import * as THREE from 'three';
 import raf from 'raf';
 
@@ -6,11 +5,10 @@ const defaults = {
   fps: 30,
   autoClear: true,
   autoStart: true
-}
-
+};
 
 export function ticker(animationFunction, fps = defaults.fps) {
-  const interval = 1000 / fps; 
+  let interval = 1000 / fps; 
   let isPlaying = false;
   let i = 0;
   let startTime;
@@ -22,16 +20,22 @@ export function ticker(animationFunction, fps = defaults.fps) {
       startTime = timestamp;
     }
 
-    // const elapsedTime = timestamp - startTime;
-
-    animationFunction(i++, clock);
-
+    const elapsedTime = timestamp - startTime;
     const nextFrameTime = startTime + (i * interval);
-    const delay = Math.max(0, nextFrameTime - timestamp);
 
-    animationId = setTimeout(() => {
-      animationId = raf(animate);
-    }, delay);
+    if (elapsedTime >= i * interval) {
+      animationFunction(i++, clock);
+    }
+
+    const delay = nextFrameTime - performance.now();
+
+    animationId = raf(() => {
+      if (delay > 0) {
+        animate(performance.now() + delay);
+      } else {
+        animate(performance.now());
+      }
+    });
   }
 
   function start() {
@@ -48,15 +52,19 @@ export function ticker(animationFunction, fps = defaults.fps) {
     if (isPlaying) {
       isPlaying = false;
       clock.stop();
-      clearTimeout(animationId);
+      raf.cancel(animationId);
     }
   }
 
-  start();
+  if (defaults.autoStart) {
+    start();
+  }
 
   return {
     start,
     stop,
-    isPlaying
+    get isPlaying() {
+      return isPlaying;
+    }
   };
 }

@@ -9,7 +9,7 @@ const schema = {
 const pose = function() {
   const scene = new Scene();
   const e = new PoseEmitter()
-  scene.add(e)
+  scene.addModule(e)
   e.on('update', data => {
     scene.render(data.image)
   })

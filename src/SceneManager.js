@@ -1,8 +1,6 @@
-import { isImageData } from '../utils/Image.js';
-import Display from './Display.js';
-import SceneImporter from './SceneImporter.js';
-import ScenePlaying from './ScenePlaying.js';
-import SceneQueue from './SceneQueue.js';
+import SceneImporter from './Importer.js';
+import ScenePlaying from './Playing.js';
+import SceneQueue from './Queue.js';
 
 let manager;
 
@@ -98,16 +96,9 @@ export default class SceneManager {
   }
 
   _registerEvents() {
-    const display = Display.sharedInstance()
-
-    this.playing.on('update', (data) => {
-      if (!data) return;
-      isImageData(data) ? display.sendImageData(data) : display.send(data)
-    })
-    
-    this.playing.on('finished', () => {
+    this.playing.on('finished', async () => {
       if (this.options.autoPlay && this.queue.hasItems) 
-        this.play(this.queue.next())
+        await this.play(this.queue.next())
     })
   }
 

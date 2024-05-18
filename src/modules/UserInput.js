@@ -1,16 +1,20 @@
 import { createEmptyImageData } from '../../utils/Image.js';
 import Display from '../Display.js';
+import Module from './Module.js';
 
-export default class UserInputModule {
+export default class UserInputModule extends Module {
 
   constructor() {
+    super()
     this.touches = [];
     const { width, height } = Display.size()
     this.imageData = createEmptyImageData(width, height)
   }
 
-  addTouch(point, size, isEnd) {
-    if (this.isEnd === 0) this.fillPointsBetweenLastPoint(point, size)
+  load() {}
+
+  add(point, size, isEnd) {
+    if (!this.isEnd) this.fillPointsBetweenLastPoint(point, size)
     this.isEnd = isEnd
     if (!this.touchExists(point)) {
       this.touches.push({
@@ -81,7 +85,7 @@ export default class UserInputModule {
     const { width, height } = Display.size()
     this.touches = []
     this.imageData = createEmptyImageData(width, height)
-    this.isEnd = 0
+    this.isEnd = false
   }
 
   render() {

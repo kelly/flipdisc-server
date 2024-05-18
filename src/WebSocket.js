@@ -26,18 +26,16 @@ const prepareLiveSceneMessage = (imageData, info) => {
 
 const receive = (message) => {
   const manager = SceneManager.sharedInstance();
-  const data = new Int8Array(message)
-  if (data.length !== 4) return console.error('Invalid message')
+  const msgName = 'UserInput'
+  const buffer = new Uint8Array(message);      
+  const data = decode(buffer, msgName)
 
-  const point = new Int8Array([data[0], data[1]])
-  const size = data[2] 
-  const isNew = data[3]
-  const scene = manager.playing?.scene
-
-  if (scene) {
-    scene.user.addTouch(point, size, isNew)
+  if (data) {
+    const { point, size, isEnd } = data
+    const scene = manager.playing?.scene
+    scene.user.add(point, size, isEnd)
     scene.render()
-  }
+  }  
 }
 
 const startWebsocket = (port = 7071) => {
