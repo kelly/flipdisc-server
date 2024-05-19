@@ -66,7 +66,7 @@ const lava = function(props) {
   scene.useLoop((i, clock) => {
     const delta = clock.getDelta();
     time += delta * 1.0 * 0.5;
-    updateCubes(effect, time, blobCount);
+    updateCubes(effect, time, blobCount)
   }, 35)
 
   return scene;

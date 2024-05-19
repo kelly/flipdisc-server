@@ -35,6 +35,27 @@ export default class ImageView extends BaseView {
     this.sprite.height = value;
   }
 
+  async fitWidth() {
+    await this.ensureLoaded();
+    const { width } = BaseView.baseSize()
+    this.sprite.width = width;
+    this.sprite.height = width;
+  }
+
+  async fitHeight() {
+    await this.ensureLoaded();
+    const { height } = BaseView.baseSize()
+    this.sprite.width = height;
+    this.sprite.height = height;
+  }
+
+  async center() {
+    await this.ensureLoaded();
+    const { width, height } = BaseView.baseSize();
+    this.sprite.x = width / 2 - this.sprite.width / 2;
+    this.sprite.y = height / 2 - this.sprite.height / 2;
+  }
+
   async initialize(asset) {
     const texture = isValidURL(asset) ? 
       await this._loadImage(asset) : 
