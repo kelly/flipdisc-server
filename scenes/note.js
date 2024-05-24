@@ -4,7 +4,7 @@ import Scene from '../src/Scene.js';
 // import { Container, Graphics, Text } from '@pixi/node'
 // import { createImage } from '../src/views/Image.js';
 import CardView from '../src/views/CardView.js';
-import ProgressBar from '../src/views/ProgressBar.js';
+import ProgressBar from '../src/views/ProgressBarView.js';
 
 const defaults = {
   text: 'hello world',
@@ -68,9 +68,7 @@ const note = async function(props) {
     })
     progress = new ProgressBar(40)
     card.bodyView.addChild(progress)
-    scene.add(card)
-    await card.getChildren();
-    
+    scene.add(card)    
     scene.render()
   })
 

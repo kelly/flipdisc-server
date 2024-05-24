@@ -25,8 +25,6 @@ const image = async function(options) {
     const imageView = new ImageView(url)
     imageView.fitWidth()
     scene.add(imageView)
-    await imageView.ready;
-    scene.render();
   })
 
   return scene;

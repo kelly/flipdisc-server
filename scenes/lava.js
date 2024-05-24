@@ -60,7 +60,7 @@ const lava = function(props) {
     effect = createEffect();
     const textview = new TextView('Lava', { fontName: 'Futura', fontSize: 28})
     scene.add(textview)
-    scene.three.add(effect);
+    scene.add(effect);
   })
 
   scene.useLoop((i, clock) => {

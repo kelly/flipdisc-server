@@ -1,11 +1,22 @@
-import { Application, Assets, utils, DisplayObject, Container } from '@pixi/node';
+import { Application, Assets, utils, DisplayObject, Container, Graphics } from '@pixi/node';
 import Display from '../Display.js';
 import Module from './Module.js';
+import BaseView from '../views/BaseView.js';
 import { initializeLayout, layoutSetRenderer, removeLayoutRenderer } from 'pixi-flex-layout';
+import { gsap } from 'gsap';
+import { PixiPlugin } from 'gsap/dist/PixiPlugin.js';
 
+const init = () => {
+  Assets.init()
+  initializeLayout(DisplayObject.prototype, Container.prototype);
+  gsap.registerPlugin(PixiPlugin);
+  PixiPlugin.registerPIXI({
+    DisplayObject: DisplayObject,
+    Graphics: Graphics,
+  })
+}
 
-Assets.init()
-initializeLayout(DisplayObject.prototype, Container.prototype);
+init();
 
 export default class PixiModule extends Module {
   constructor() {
@@ -34,7 +45,10 @@ export default class PixiModule extends Module {
   }
 
  
-  add(view) {
+  async add(view) {
+    if (view instanceof BaseView) {
+      await view.ready; 
+    }
     this.stage.addChild(view);
   }
 
@@ -88,3 +102,4 @@ export default class PixiModule extends Module {
   }
 
 }
+

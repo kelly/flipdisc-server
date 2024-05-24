@@ -5,7 +5,7 @@ import { ticker } from '../utils/animation.js';
 import { PixiModule, ThreeModule, MatterModule, UserInputModule, Module } from './modules/index.js';
 import  * as modules from './modules/index.js';
 import { Utils } from 'flipdisc';
-import { isImageData, formatRGBAPixels } from '../utils/Image.js';
+import { isImageData, formatRGBAPixels } from '../utils/image.js';
 
 
 
@@ -91,7 +91,9 @@ class Scene extends EventEmitter {
   }
 
   add(view) {
-    return this.moduleForView(view)?.add(view);
+    return this.moduleForView(view)?.add(view).then(() => {
+      this.shouldRenderOnTick = true;
+    })
   }
 
   remove(view) {
@@ -119,6 +121,15 @@ class Scene extends EventEmitter {
     this.stopped = false;
     this._resumeAllModules();
     this.ticker?.start();
+  }
+
+  finished() {
+    this.stop();
+    this.emit('finished');
+  }
+
+  clear() {
+    this.context.clearRect(0, 0, this.width, this.height);
   }
 
   useLoop(fn, fps = this.loopFps) {
@@ -187,7 +198,7 @@ class Scene extends EventEmitter {
   findOrCreateModule(c) {
     let m = this.modules.find((m) => m instanceof c);
     if (!m) {
-      m = new c();
+      m = new c(this.canvas);
       this.addModule(m)
     }
     return m;

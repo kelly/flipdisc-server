@@ -52,13 +52,18 @@ export default class InteractionEmitter extends EventEmitter {
       this.emit('update', json)
     }
   }
+  
+  destroyProcess() {
+    this.process.removeAllListeners();
+    this.process?.kill();
+    this.process = null;
+  }
 
   destroy() {
     this.isDestroying = true;
     this.removeAllListeners();
-    this.process.removeAllListeners();
+    this.destroyProcess();
     process.removeAllListeners()
-    this.process?.kill();
-    this.process = null;
+
   }
 }

@@ -1,4 +1,4 @@
-import { isImageData, formatRGBAPixels } from '../utils/Image.js';
+import { isImageData, formatRGBAPixels } from '../utils/image.js';
 import { EventEmitter } from 'events';
 import Display from './Display.js';
 import { ticker } from '../utils/animation.js';

@@ -1,4 +1,4 @@
-import { createEmptyImageData } from '../../utils/Image.js';
+import { createEmptyImageData } from '../../utils/image.js';
 import Display from '../Display.js';
 import Module from './Module.js';
 

@@ -1,30 +1,55 @@
-function dither(imageData, imageWidth) {
+function dither(buffer, imageWidth) {
   const r = Array.from({ length: 256 }, (_, i) => i * 0.299);
   const g = Array.from({ length: 256 }, (_, i) => i * 0.587);
-  const b = Array.from({ length: 256 }, (_, i) => i * 0.110);
+  const b = Array.from({ length: 256 }, (_, i) => i * 0.114);
 
   const width = imageWidth;
-  const length = imageData.length;
+  const length = buffer.length;
 
+  // Convert to grayscale
   for (let i = 0; i < length; i += 4) {
-    const luminance = Math.floor(r[imageData[i]] + g[imageData[i + 1]] + b[imageData[i + 2]]);
-    imageData[i] = luminance;
-    imageData[i + 1] = luminance;
-    imageData[i + 2] = luminance;
+    const luminance = Math.floor(r[buffer[i]] + g[buffer[i + 1]] + b[buffer[i + 2]]);
+    buffer[i] = luminance;
+    buffer[i + 1] = luminance;
+    buffer[i + 2] = luminance;
   }
 
-  for (let index = 0; index < length; index += 4) {
-    const newPixel = imageData[index] < 150 ? 0 : 255;
-    imageData[index] = newPixel;
+  // Apply Floyd-Steinberg dithering
+  for (let i = 0; i < length; i += 4) {
+    const oldPixel = buffer[i];
+    const newPixel = oldPixel < 128 ? 0 : 255;
+    buffer[i] = newPixel;
+    buffer[i + 1] = newPixel;
+    buffer[i + 2] = newPixel;
 
-    const error = Math.floor((imageData[index] - newPixel) / 16);
-    imageData[index + 4] += error * 7;
-    imageData[index + 4 * width - 4] += error * 3;
-    imageData[index + 4 * width] += error * 5;
-    imageData[index + 4 * width + 4] += error;
+    const error = oldPixel - newPixel;
+
+    if (i + 4 < length) {
+      buffer[i + 4] += error * 7 / 16;
+      buffer[i + 4 + 1] += error * 7 / 16;
+      buffer[i + 4 + 2] += error * 7 / 16;
+    }
+
+    if (i + 4 * (width - 1) - 4 < length && i + 4 * (width - 1) - 4 >= 0) {
+      buffer[i + 4 * (width - 1) - 4] += error * 3 / 16;
+      buffer[i + 4 * (width - 1) - 4 + 1] += error * 3 / 16;
+      buffer[i + 4 * (width - 1) - 4 + 2] += error * 3 / 16;
+    }
+
+    if (i + 4 * width < length) {
+      buffer[i + 4 * width] += error * 5 / 16;
+      buffer[i + 4 * width + 1] += error * 5 / 16;
+      buffer[i + 4 * width + 2] += error * 5 / 16;
+    }
+
+    if (i + 4 * (width + 1) < length) {
+      buffer[i + 4 * (width + 1)] += error * 1 / 16;
+      buffer[i + 4 * (width + 1) + 1] += error * 1 / 16;
+      buffer[i + 4 * (width + 1) + 2] += error * 1 / 16;
+    }
   }
 
-  return imageData;
+  return buffer;
 }
 
 function getLuminanceRGB(r, g, b) {

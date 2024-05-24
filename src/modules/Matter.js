@@ -14,7 +14,6 @@ export default class MatterModule extends Module {
   constructor(canvas, options = {}) {
     super();
     this.options = { ...defaultOptions, ...options }
-    this.canvas = canvas;
 
     this.load()
   }
@@ -64,7 +63,7 @@ export default class MatterModule extends Module {
     Render.run(this.renderer);
   }
 
-  add(bodies) {
+  async add(bodies) {
     return Composite.add(this.engine.world, bodies)
   }
 

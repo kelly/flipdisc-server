@@ -1,5 +1,6 @@
 import { Container } from '@pixi/node';
 import Display from '../Display.js';
+import DitherFilter from './filters/DitherFilter.js';
 
 export default class BaseView extends Container {
   constructor(...props) {
@@ -25,7 +26,8 @@ export default class BaseView extends Container {
     await Promise.all(childPromises);
   }
 
-  async addChild(...children) {
+  async addChildReady(...children) {
+    await this.ensureLoaded() &&  await this.ensureChildrenLoaded();
     super.addChild(...children);
   }
 
@@ -36,6 +38,11 @@ export default class BaseView extends Container {
 
   static baseSize() {
     return Display.size()
+  }
+
+  dither() {
+    const d = DitherFilter()
+    this.filters = [...this.filters, d];
   }
 
   async initialize(...props) {

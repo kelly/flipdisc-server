@@ -35,8 +35,7 @@ export default class ThreeModule extends Module {
     this.load()
   }
 
-  add(view) {
-    this.scene.add(view);
+  async add(view) {
   }
 
   async load() {

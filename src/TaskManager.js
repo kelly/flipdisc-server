@@ -1,6 +1,7 @@
 import workerpool  from 'workerpool';
 import later from '@breejs/later';
 import SceneManager from './SceneManager.js';
+import { scene } from '../scenes/note.js';
 
 let sceneManager;
 
@@ -34,18 +35,13 @@ export default class SceneTaskManager {
 
   async exec(task) {
     const result = await this.pool.exec(task.func)
+    if (!result) return;
+    
     const { props, duration, wait = true } = result;
-    if (result) {
-      if (wait) {
-        sceneManager.queue.add({ 
-          id: task.id, 
-          props,
-          duration,
-        });
-      } else {
-        sceneManager.play(item)
-      }
-    }
+    const item = { id: task.id, props, duration };
+
+    if (sceneManager.playing.id === task.id) return;
+    (wait) ? sceneManager.queue.add(item) : sceneManager.play(item)
   }
 
   scheduleTask(task) {

@@ -24,12 +24,12 @@ function fontPaths() { return fonts.map(font => path.join(appRoot.path, fontPath
 export default class TextView extends BaseView {
 
   async initialize(text, options = {}) {
-    this.options = { ...defaults, ...options };
-    this.options.maxWidth = this.options.maxWidth || BaseView.baseSize().width;
+    this._options = { ...defaults, ...options };
+    this._options.maxWidth = this._options.maxWidth || BaseView.baseSize().width;
     this._text = text || '';
     this.fontName = this.options.fontName;
-    const isBitmapFont = bitmapFontForName(this.fontName) !== undefined;
-    this.t = (isBitmapFont) ? await this.createBitmapText() : this.createText();
+    this.isBitmapFont = bitmapFontForName(this.fontName) !== undefined;
+    this.t = (this.isBitmapFont) ? await this.createBitmapText() : this.createText();
     this.addChild(this.t);
   }
 
@@ -46,27 +46,66 @@ export default class TextView extends BaseView {
   }
 
   async createBitmapText() {
-    const font = bitmapFontForName(this.fontName);
+    this.font = bitmapFontForName(this.fontName);
     await Assets.load(fontPaths());
 
     const t = new BitmapText(this._text, {
       ...this.options,
-      fontFamily: font.name,
-      fontName: font.name,
-      fontSize: font.size,
+      fontFamily: this.font.name,
+      fontName: this.font.name,
+      fontSize: this.font.size,
     });
 
     t.x = this.options.x || 0;
     t.y = this.options.y || 0;
     t.flex = true;
 
-    const bounds = t.getBounds();
-    const lines = bounds.height / font.size;
-    this.layout.minHeight = lines * font.size;
-    this.layout.minWidth = bounds.width;
-
+    this.updateLayoutForText(t);
     return t;
   }
+
+  updateLayoutForText(t) {
+    if (!this.isBitmapFont) return;
+    t = t || this.t;
+    const bounds = t.getBounds();
+    const lines = bounds.height / this.font.size;
+    this.layout.minHeight = lines * this.font.size;
+    this.layout.minWidth = bounds.width;
+  }
+
+  marquee(direction = 'left', delay = 1000, speed = 1) {
+    const bounds = this.t.getBounds();
+    const distance = bounds.width - this.options.maxWidth;
+    const duration = distance / speed;
+
+    if (direction === 'left') {
+      this.t.x = this.options.maxWidth;
+      this.t.vx = -speed;
+    } else {
+      this.t.x = -bounds.width;
+      this.t.vx = speed;
+    }
+
+    this.t.vy = 0;
+    this.t.delay = delay;
+    this.t.duration = duration;
+    this.t.direction = direction;
+    this.t.animate = true;
+  }
+
+
+  get options() {
+    return this._options;
+  }
+
+
+  set options(value) {
+    this._options = value;
+    if (this.t) {
+      this.t.style = new TextStyle({ ...this.options, fontFamily: this.fontName });
+    }
+  }
+
 
   set text(value) {
     this._text = value;
@@ -74,6 +113,7 @@ export default class TextView extends BaseView {
       if (this.t) {
         this.t.text = this._text;
       }
+      this.updateLayoutForText();
     })
   }
 }

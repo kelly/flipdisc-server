@@ -5,6 +5,7 @@ import { Pose, Gesture, Voice } from './src/interaction/index.js'
 import createServer from './src/Server.js'
 import createTask from './src/Task.js'
 import { createImageData, loadImage } from 'node-canvas-webgl'
+export { ImageView, TextView, CardView, BaseView, ListView, ProgressBarView, BackgroundTextView } from './src/views/index.js'
 
 export {
   Scene,
