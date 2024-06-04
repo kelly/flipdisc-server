@@ -1,7 +1,7 @@
 import workerpool  from 'workerpool';
 import later from '@breejs/later';
 import SceneManager from './SceneManager.js';
-import { scene } from '../scenes/note.js';
+import logger from './Logger.js'
 
 let sceneManager;
 
@@ -50,7 +50,7 @@ export default class SceneTaskManager {
       try {
         this.exec(task)
       } catch (e) {
-        console.warn('error executing task', e)
+        logger.warn(`error executing task id: ${task.id}`)
       }
     }, interval);
   }

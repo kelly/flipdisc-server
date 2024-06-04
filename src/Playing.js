@@ -1,22 +1,31 @@
 import EventEmitter from 'events';
-import { createTimer } from '../utils/timer.js';
 import Display from './Display.js';
+import Recording from './Recording.js';
+import logger from './Logger.js'
+import Renderer from './Renderer.js';
+
+const defaults = {
+  isRecording: true
+}
 
 export default class Playing extends EventEmitter {
   
-  constructor() {
+  constructor(options = {})  {
     super();
+    options = { ...defaults, ...options };
     this.scene = null;
-    this.isPlaying = false;
-    this.timer = null;
+    this.renderer = new Renderer();
+
+    if (options.isRecording) {
+      this.recorder = new Recording();
+    }
   }
 
   async set(item) {
+    if (this.scene) this.cleanupScene()
+
     const { sceneObj, props, duration } = item;
     const { scene, schema } = sceneObj;
-    
-    if (this.scene)
-      this.cleanupScene()
 
     this.schema = schema;
     this.props = props;
@@ -39,49 +48,43 @@ export default class Playing extends EventEmitter {
     try {
       this.scene = await scene(props)
     } catch (e) {
-      console.error('Error setting up scene', e)
+      logger.error('Error setting up scene')
       this.emit('finished')
       return;
     }
     this.scene.on('update', (data) => {
       this.emit('update', data);
       Display.sharedInstance().send(data);
+      this.recorder?.record(this.id, data);
     });
   }
 
   playFor(duration) {
     this.play();
-    this.timer = createTimer(() => {
-      this.stop();
+    this.renderer.setFinish(() => {
       this.emit('finished')
     }, duration);
   }
 
   play() {
-    this.scene?.play();
-    this.isPlaying = true;
+    this.renderer.setScene(this.scene);
   }
 
   toggle() {
-    this.isPlaying ? this.stop() : this.resume();
+    this.renderer.isPlaying ? this.stop() : this.resume();
   }
 
   stop() {
-    this.scene?.stop();
-    this.timer?.pause();
-    this.isPlaying = false;
+    this.renderer.stop();
   }
 
   resume() {
-    this.isPlaying = true;
-    this.timer?.resume();
-    this.scene?.resume();
+    this.renderer.start();
   }
 
   cleanupScene() {
-    this.timer?.clear();
-    this.timer = null;
-    this.isPlaying = false;
+    this.recorder?.save()
+    this.renderer.clear();
     this.scene?.destroy();
     this.scene = null;
   }
@@ -97,13 +100,13 @@ export default class Playing extends EventEmitter {
   
   get info() {
     return {
-      isPlaying: this.isPlaying,
+      isPlaying: this.renderer.isPlaying,
       schema: this.schema || {},
       id: this.schema?.id,
       props: this.props || {},
-      timeRemaining: this.timer?.getTimeRemaining(),
+      timeRemaining: this.renderer.timeRemaining,
       isStatic: this.scene?.isStatic,
-      duration: this.duration
+      duration: this.renderer.duration
     }
   }
 

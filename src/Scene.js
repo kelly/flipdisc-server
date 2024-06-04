@@ -1,17 +1,14 @@
 import EventEmitter from 'events';
 import { createCanvas } from 'node-canvas-webgl';
 import Display from './Display.js';
-import { ticker } from '../utils/animation.js';
 import { PixiModule, ThreeModule, MatterModule, UserInputModule, Module } from './modules/index.js';
 import  * as modules from './modules/index.js';
 import { Utils } from 'flipdisc';
 import { isImageData, formatRGBAPixels } from '../utils/image.js';
 
-
-
 const defaultOptions = {
   shouldAutoRender: true,
-  loopFps: 30
+  fps: 35
 };
 
 class Scene extends EventEmitter {
@@ -19,7 +16,7 @@ class Scene extends EventEmitter {
     super();
     const { width, height } = Display.size();
     this.options = { ...defaultOptions, ...options };
-    this.loopFps = this.options.loopFps;
+    this.fps = this.options.fps;
     this.shouldAutoRender = this.options.shouldAutoRender;
     this.lastRenderData = null;
     this.canvas = createCanvas(width, height);
@@ -35,14 +32,6 @@ class Scene extends EventEmitter {
 
   _renderModules() {
     return this.modules.map((m) => (m.render ? m.render() : null)).filter((l) => l) || [];
-  }
-
-  _stopAllModules() {
-    this.modules.forEach((m) => typeof m.stop === 'function' && m.stop());
-  }
-
-  _resumeAllModules() {
-    this.modules.forEach((m) => typeof m.resume === 'function' && m.resume());
   }
 
   _mergeLayers(layers) {
@@ -78,20 +67,15 @@ class Scene extends EventEmitter {
       this._render();
   }
 
-  play() {
-    const tick = this.tick.bind(this);
-    this.ticker?.stop();
-    this.ticker = ticker(tick, 1000 / this.loopFps);
-  }
-
   addModule(module) {
-    if (module instanceof Module || module instanceof EventEmitter) {
-      return this.modules.push(module);
-    }
+    return this.modules.push(module);
   }
 
-  add(view) {
-    return this.moduleForView(view)?.add(view).then(() => {
+  add(obj) {
+    if (obj instanceof Module || obj instanceof EventEmitter) {
+      return this.addModule(obj);
+    }
+    return this.moduleForView(obj)?.add(obj).then(() => {
       this.shouldRenderOnTick = true;
     })
   }
@@ -111,20 +95,11 @@ class Scene extends EventEmitter {
     this._renderIfNeeded()
   }
 
-  stop() {
-    this.stopped = true;
-    this._stopAllModules();
-    this.ticker?.stop();
-  }
-
-  resume() {
-    this.stopped = false;
-    this._resumeAllModules();
-    this.ticker?.start();
+  get loop() {
+    return this.tick.bind(this);
   }
 
   finished() {
-    this.stop();
     this.emit('finished');
   }
 
@@ -132,11 +107,11 @@ class Scene extends EventEmitter {
     this.context.clearRect(0, 0, this.width, this.height);
   }
 
-  useLoop(fn, fps = this.loopFps) {
+  useLoop(fn, fps = this.fps) {
     this.loops.push({ fn, fps, lastExecution: 0 });
   }
 
-  useShader(shader, uniform, update, fps = 50) {
+  useShader(shader, uniform, update, fps = this.fps) {
     const loopFn = update
       ? (i, clock) => {
           const uniform = this.three.uniforms;
@@ -145,14 +120,6 @@ class Scene extends EventEmitter {
       : this.three.updateShaderDefault.bind(this.three);
     this.three.createShader(shader, uniform);
     this.useLoop(loopFn, fps);
-  }
-
-  async useImage(image) {
-    try {
-      await this.pixi.createImage(image);
-    } catch (e) {
-      console.error('Error creating image', e);
-    }
   }
 
   get width() {
@@ -172,17 +139,15 @@ class Scene extends EventEmitter {
   }
 
   get isStatic() {
-    return !this.loop;
+    return !this.loops;
   }
 
   destroy() {
     this.emit('unload');
-    this.stop();
     this.modules.forEach((m) => m.destroy());
     this.removeAllListeners();
-    this.ticker = null;
     this.canvas = null;
-    this.loop = null;
+    this.loops = null;
     this.modules = [];
   }
 
@@ -245,6 +210,7 @@ class Scene extends EventEmitter {
   }
 
   _isNewImageData(data) {
+    if (Utils.isEmptyArray(data)) return false;
     if (!this.lastRenderData) return true;
     return !Utils.areArraysEqual(data, this.lastRenderData);
   }

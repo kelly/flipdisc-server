@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import Display from '../Display.js';
 import Module from './Module.js';
-import { createCanvas } from 'node-canvas-webgl'
 
 const defaultOptions = {
 
@@ -36,6 +35,9 @@ export default class ThreeModule extends Module {
   }
 
   async add(view) {
+    if (ThreeModule.isValidInstance(view)) {
+      this.scene.add(view);
+    }
   }
 
   async load() {

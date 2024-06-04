@@ -26,6 +26,8 @@
     "hono": "^4.2.1",
     "matter-js": "^0.19.0",
     "node-canvas-webgl": "^0.3.0",
+    "pino": "^9.1.0",
+    "pino-pretty": "^11.1.0",
     "pixi-flex-layout": "github:kelly/node-pixi-flex-layout",
     "protobufjs": "^7.3.0",
     "raf": "^3.4.1",

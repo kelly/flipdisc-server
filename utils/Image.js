@@ -88,4 +88,52 @@ function createEmptyImageData(width, height) {
   return imageData;
 }
 
-export { dither, isImageData, formatRGBAPixels, createEmptyImageData }
+function compressImageData(data) {
+  let encoded = data.map(row => {
+    let rowEncoded = '';
+    let current = row[0];
+    let count = 1;
+
+    for (let i = 1; i < row.length; i++) {
+        if (row[i] === current) {
+            count++;
+        } else {
+            rowEncoded += `${current},${count},`;
+            current = row[i];
+            count = 1;
+        }
+    }
+    rowEncoded += `${current},${count}`;
+    return rowEncoded;
+  }).join('|'); // Join rows with a pipe to keep them in a single string
+
+  return encoded;
+}
+
+function decompressImageData(encodedData, length) {
+  let rows = encodedData.split('|');
+  let decoded = new Array(rows.length);
+
+  for (let i = 0; i < rows.length; i++) {
+    let rowEncoded = rows[i];
+    let pairs = rowEncoded.split(',');
+    let rowDecoded = new Array(length);
+    let index = 0;
+
+    for (let j = 0; j < pairs.length; j += 2) {
+      let value = parseInt(pairs[j]);
+      let count = parseInt(pairs[j + 1]);
+      for (let k = 0; k < count; k++) {
+        if (index < length) {
+          rowDecoded[index++] = value;
+        } else {
+          break;
+        }
+      }
+    }
+    decoded[i] = rowDecoded;
+  }
+  return decoded;
+}
+
+export { dither, isImageData, formatRGBAPixels, createEmptyImageData, compressImageData, decompressImageData }

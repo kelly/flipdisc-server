@@ -8,7 +8,7 @@ const voiceDefaultOptions = {
   triggerWord: 'flip'
 }
 
-class VoiceInteractionManager extends Module {
+class VoiceEmitter extends Module {
   // args: ['-m', '../resources/models/ggml-small.en.bin', '-t', '6', '--step', '0', '--length', '30000', '-vth', '0.6']
 
   constructor(options) {
@@ -44,4 +44,4 @@ class VoiceInteractionManager extends Module {
   }
 }
 
-export default VoiceInteractionManager;
+export default VoiceEmitter;

@@ -2,7 +2,7 @@ import Matter from 'matter-js';
 import Display from '../Display.js';
 import Module from './Module.js';
 
-var { Engine, Render, Bodies, Composite, World } = Matter;
+var { Engine, Render, Bodies, Composite } = Matter;
 
 const defaultOptions = {
   hasWalls: false,
@@ -14,6 +14,7 @@ export default class MatterModule extends Module {
   constructor(canvas, options = {}) {
     super();
     this.options = { ...defaultOptions, ...options }
+    this.canvas = canvas;
 
     this.load()
   }
@@ -60,7 +61,7 @@ export default class MatterModule extends Module {
     this._initMatter()
     this._setupDefaultBodies();
 
-    Render.run(this.renderer);
+    // Render.run(this.renderer);
   }
 
   async add(bodies) {
@@ -72,14 +73,13 @@ export default class MatterModule extends Module {
   }
 
   render() {
+    this.tick();
     Engine.update(this.engine, this.options.tickRate); 
+    // Render.run(this.renderer);
   }
 
-  resume() {
+  tick() {
     Render.run(this.renderer);
-  }
-
-  stop() {
     Render.stop(this.renderer);
   }
 

@@ -26,8 +26,7 @@ const clock = function() {
     fontName: 'Futura',
     fontSize: 28,
   }
-  // scene.loadFonts();
-
+  
   let textView;
   scene.once('loaded', () => {
     textView = new TextView('00:00', textStyle)
@@ -44,7 +43,7 @@ const clock = function() {
     if (userPrefers12HourFormat) {
       const ampm = hours >= 12 ? 'PM' : 'AM';
       const twelveHour = hours % 12 || 12;
-      time = `${twelveHour}:${minutes} ${ampm}`;
+      time = `${twelveHour}:${minutes}`;
     } else {
       time = `${hours}:${minutes}`;
     }

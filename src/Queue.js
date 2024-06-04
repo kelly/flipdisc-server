@@ -1,6 +1,6 @@
 
 const defaults = { 
-  duration: 1, // minutes
+  duration: 600000, // 10 minutes
   shouldLoop: true
 }
 

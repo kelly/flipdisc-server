@@ -1,8 +1,8 @@
 import Scene from '../src/Scene.js';
-import PoseEmitter from '../src/interaction/Pose.js'
+import PoseEmitter from '../src/interaction/PoseEmitter.js'
 
 const schema = {
-  title: 'Pose',
+  title: 'PoseEmitter',
   description: 'A simple pose widget that displays the current pose.',
 }
 

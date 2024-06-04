@@ -1,4 +1,5 @@
 import { Display } from 'flipdisc'
+import logger from './Logger.js'
 
 // import { display as config } from '../config/config.js'
 
@@ -22,7 +23,7 @@ class MyDisplay extends Display {
 
   static sharedInstance() {
     if (!config) {
-
+      logger.error('Display: must call configure before using sharedInstance()');
     }
 
     const { layout, devices, options } = config

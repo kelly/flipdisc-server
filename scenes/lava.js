@@ -33,7 +33,7 @@ const lava = function(props) {
 
   function createEffect() {
     const resolution = 100;
-    const plasticMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0xFFF, shininess: 0 }); // Set object color to white
+    const plasticMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0xFFF, shininess: 0 }); 
     const effect = new MarchingCubes(resolution, plasticMaterial, true, true, 100000);
     effect.position.set(0, 0, 0);
     effect.scale.set(5, 5, 5);
@@ -48,7 +48,7 @@ const lava = function(props) {
     const strength = 1.2 / ((Math.sqrt(numblobs) - 1) / 4 + 1);
     for (let i = 0; i < numblobs; i++) {
       const ballx = Math.sin(i + 1.26 * time * (1.03 + 0.5 * Math.cos(0.21 * i))) * 0.27 + 0.5;
-      const bally = Math.abs(Math.cos(i + 1.12 * time * Math.cos(1.22 + 0.1424 * i))) * 0.77; // dip into the floor
+      const bally = Math.abs(Math.cos(i + 1.12 * time * Math.cos(1.22 + 0.1424 * i))) * 0.77; 
       const ballz = Math.cos(i + 1.32 * time * 0.1 * Math.sin((0.92 + 0.53 * i))) * 0.27 + 0.5;
 
       object.addBall(ballx, bally, ballz, strength, subtract);
@@ -67,7 +67,7 @@ const lava = function(props) {
     const delta = clock.getDelta();
     time += delta * 1.0 * 0.5;
     updateCubes(effect, time, blobCount)
-  }, 35)
+  }, 60)
 
   return scene;
 }

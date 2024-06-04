@@ -2,12 +2,21 @@ import fs from 'fs';
 import path from 'path';
 import SceneImport from './Import.js';
 import SceneManager from './SceneManager.js';
+import logger from './Logger.js';
+
+const defaults = {
+  shouldWatchChanges: true
+}
 
 export default class SceneImporter {
 
-  constructor(dir) {
+  constructor(dir, options = {}) {
+    options = { ...defaults, ...options };
     this._dir = dir
-    this.watchDir()
+
+    if (options.shouldWatchChanges) {
+      this.watchDir()
+    }
   }
 
   async getPaths() {
@@ -35,7 +44,7 @@ export default class SceneImporter {
 
   async loadOne(filename, hasChanged = false) {
     const scene = this.imports.find(s => s.filename === filename);
-    console.log('loading scene', scene.filename)
+    logger.info(`loading scene ${scene.filename}`)
     return scene.load(hasChanged);
   }
 

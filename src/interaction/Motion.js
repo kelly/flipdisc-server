@@ -6,6 +6,7 @@ import Display from '../Display.js';
 const defaultMotionOptions = {
   motionTriggers: null
 }
+
 export default class MotionEmitter extends InteractionEmitter {
 
   constructor(script, options = {}) {
