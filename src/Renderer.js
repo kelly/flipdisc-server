@@ -3,11 +3,8 @@ import raf from 'raf';
 
 export default class Renderer {
   constructor() {
-    this.i = 0;
-    this.animationId = null;
     this.clock = new THREE.Clock();
-    this.onFinished = null;
-    this.duration = 0;
+    this._setDefaults();
   }
 
   setScene(scene) {
@@ -15,22 +12,6 @@ export default class Renderer {
 
     this.animationFunction = scene.loop;
     this.start();
-  }
-
-  _animate = () => {
-    this.animationFunction(this.i++, this.clock);
-    this.elapsedTime = this.clock.getElapsedTime()
-    this._clearIfFinished();
-
-    this.animationId = raf(this._animate);
-  };
-
-
-  _clearIfFinished() {
-    if (this.onFinished && this.elapsedTime >= this.duration) {
-      this.onFinished();
-      this.clear();
-    }
   }
 
   setFinish(callback, time) {
@@ -55,8 +36,7 @@ export default class Renderer {
     raf.cancel(this.animationId);
   }
 
-  clear() {
-    this.stop();
+  _setDefaults() {
     this.animationFunction = null;
     this.onFinished = null;
     this.duration = 0;
@@ -64,10 +44,29 @@ export default class Renderer {
     this.i = 0;
   }
 
+  clear() {
+    this.stop();
+    this._setDefaults();
+  }
+
+  _animate = () => {
+    this.animationFunction(this.i++, this.clock);
+    this.elapsedTime = this.clock.getElapsedTime()
+    this._clearIfFinished();
+
+    this.animationId = raf(this._animate);
+  };
+
+  _clearIfFinished() {
+    if (this.onFinished && this.elapsedTime >= this.duration) {
+      this.onFinished();
+      this.clear();
+    }
+  }
+
   get isPlaying() {
     return this.clock.running
   }
-
 
   get timeRemaining() {
     return this.onFinished ? Math.round(this.duration - this.elapsedTime) : 0;

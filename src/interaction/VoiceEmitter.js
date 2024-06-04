@@ -5,7 +5,7 @@ import Module from '../modules/Module.js';
 
 const model = path.join(appRoot.path, './resources/models/ggml-small.en.bin')
 const voiceDefaultOptions = {
-  triggerWord: 'flip'
+  trigger: 'flip'
 }
 
 class VoiceEmitter extends Module {
@@ -19,7 +19,7 @@ class VoiceEmitter extends Module {
       command: './scripts/stream',
       args: ['-m', model]
     }
-    this.triggerWord = options.triggerWord;
+    this.trigger = options.trigger;
 
     this.manager = new InteractionManager(script)
     this._addTriggerEvent()
@@ -33,7 +33,7 @@ class VoiceEmitter extends Module {
         this.manager.emit('trigger', this.triggerBuffer)
         this.triggerBuffer = null;
       }
-      if (data.toLowerCase().includes(this.triggerWord)) {
+      if (data.toLowerCase().includes(this.trigger)) {
         this.triggerBuffer = data;
       }
     })

@@ -22,7 +22,7 @@ export default class Playing extends EventEmitter {
   }
 
   async set(item) {
-    if (this.scene) this.cleanupScene()
+    if (this.scene) this._cleanupScene()
 
     const { sceneObj, props, duration } = item;
     const { scene, schema } = sceneObj;
@@ -30,12 +30,13 @@ export default class Playing extends EventEmitter {
     this.schema = schema;
     this.props = props;
     this.duration = duration;
+    this.scene = await this._exec(scene, props);
 
-    await this._setup(scene, props);
-
-    this.isLoaded = await this.load()
-
-    duration !== undefined ? this.playFor(duration) : this.play();
+    if (this.scene) {
+      this.isLoaded = await this.load()
+      this.subscribe()
+      duration !== undefined ? this.playFor(duration) : this.play();
+    }
 
     return this
   }
@@ -44,14 +45,16 @@ export default class Playing extends EventEmitter {
     return await this.scene.load();
   }
 
-  async _setup(scene, props) {
+  async _exec(scene, props) {
     try {
-      this.scene = await scene(props)
+      return await scene(props)
     } catch (e) {
       logger.error('Error setting up scene')
       this.emit('finished')
-      return;
     }
+  }
+
+  subscribe() {
     this.scene.on('update', (data) => {
       this.emit('update', data);
       Display.sharedInstance().send(data);
@@ -82,17 +85,18 @@ export default class Playing extends EventEmitter {
     this.renderer.start();
   }
 
-  cleanupScene() {
+  destroy() {
+    this._cleanupScene();
+    this.removeAllListeners()
+  }
+
+  _cleanupScene() {
     this.recorder?.save()
     this.renderer.clear();
     this.scene?.destroy();
     this.scene = null;
   }
 
-  destroy() {
-    this.cleanupScene();
-    this.removeAllListeners()
-  }
 
   get id() {
     return this.schema?.id

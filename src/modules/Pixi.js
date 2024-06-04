@@ -65,18 +65,18 @@ export default class PixiModule extends Module {
   }
 
   async getAllChildren() {
-    return Promise.all(this.app.stage.children.map(child => child.ready))
+    return Promise.all(this.stage.children.map(child => child.ready))
   }
 
   async destroyAllChildren() {
-    if (this.app.stage.children.length > 0) {
-      this.app.stage.children.forEach(child => child.destroy())
+    if (this.stage.children.length > 0) {
+      this.stage.children.forEach(child => child.destroy())
     }
   }
 
   async destroy() {
     this.getAllChildren().then(() => {
-      removeLayoutRenderer(this.app.renderer);
+      removeLayoutRenderer(this.renderer);
       this.destroyAllChildren()
       PixiModule.removeAllTextures();
       Assets.reset();

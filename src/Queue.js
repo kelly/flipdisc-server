@@ -36,13 +36,6 @@ export default class SceneQueue  {
       this.items[idx] = item
   }
 
-  loopQueueIfNeeded(item) {
-    // only loop items don't specify a duration
-    if (this.shouldLoop && item.duration === this.defaultDuration) {
-      this.add(item)
-    }
-  }
-
   sort(ids) {
     this.items = ids.map(id => this.getItem({ id }))
   }
@@ -51,7 +44,7 @@ export default class SceneQueue  {
     if (!this.hasItems) return;
 
     const item = this.items.shift();
-    this.loopQueueIfNeeded(item); 
+    this._loopQueueIfNeeded(item); 
     return item;    
   }
 
@@ -74,7 +67,7 @@ export default class SceneQueue  {
     if (!this.hasItems) return;
 
     const item = this.items.pop();
-    this.loopQueueIfNeeded(item);
+    this._loopQueueIfNeeded(item);
     return item;
   }
 
@@ -85,7 +78,7 @@ export default class SceneQueue  {
   destroy() {
     this.clear()
   }
-
+  
   set settings({ duration, shouldLoop }) {
     this.defaultDuration = duration;
     this.shouldLoop = shouldLoop;
@@ -101,5 +94,12 @@ export default class SceneQueue  {
 
   get itemsArray() {
     return this.items.map(i => i.id)
+  }
+
+  _loopQueueIfNeeded(item) {
+    // only loop items don't specify a duration
+    if (this.shouldLoop && item.duration === this.defaultDuration) {
+      this.add(item)
+    }
   }
 }

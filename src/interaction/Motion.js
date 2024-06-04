@@ -14,7 +14,7 @@ export default class MotionEmitter extends InteractionEmitter {
 
     this.options = { ...defaultMotionOptions, ...options }
     this.history = []
-    this.addMoveEvent() 
+    this._addMoveEvent() 
   }
 
   // using es6 create an object of only filtered properties
@@ -79,7 +79,7 @@ export default class MotionEmitter extends InteractionEmitter {
     return { position, screenPosition, screenVelocity, angle, velocity, gesture, timestamp }
   }
 
-  addMoveEvent() {
+  _addMoveEvent() {
     this.on('update', (data) => {
       const mData = this._move(data)
       if (mData) {

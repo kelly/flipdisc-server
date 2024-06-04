@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import { spawn } from 'child_process'
 import zmq from 'zeromq'
 import fs from 'fs';
+import logger from '../Logger.js';
 
 export default class InteractionEmitter extends EventEmitter {
   constructor(script, options = {}) {
@@ -13,6 +14,13 @@ export default class InteractionEmitter extends EventEmitter {
   load() {
     this._run(this.script);
     this._subscribe(this.script.channel);
+  }
+
+  destroy() {
+    this.isDestroying = true;
+    this.removeAllListeners();
+    this._destroyProcess();
+    process.removeAllListeners()
   }
 
   _run(script) {
@@ -27,11 +35,11 @@ export default class InteractionEmitter extends EventEmitter {
     this.process = spawn(script.command || 'python', args);
     this.process
       .once('error', (err) => {
-        console.error(`Failed to start child process: ${err}`);
+        logger.error(`Failed to start child process: ${err}`);
       })
       .once('exit', (code) => {
         if (code !== 0 && this.maxRestarts-- > 0 && !this.isDestroying) {
-          console.error(`Child process exited with code ${code}, restarting...`);
+          logger.error(`Child process exited with code ${code}. Restarting...`);
           this._run(script);
         }
       });
@@ -54,17 +62,9 @@ export default class InteractionEmitter extends EventEmitter {
     }
   }
   
-  destroyProcess() {
+  _destroyProcess() {
     this.process.removeAllListeners();
     this.process?.kill();
     this.process = null;
-  }
-
-  destroy() {
-    this.isDestroying = true;
-    this.removeAllListeners();
-    this.destroyProcess();
-    process.removeAllListeners()
-
   }
 }

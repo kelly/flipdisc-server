@@ -14,9 +14,8 @@ const receive = (message) => {
   const manager = SceneManager.sharedInstance();
 
   if (data) {
-    const { point, size, isEnd } = data
     const scene = manager.playing?.scene
-    scene.user.add(point, size, isEnd)
+    scene.user.add(data)
     scene.render()
   }  
 }
@@ -27,19 +26,22 @@ const update = (imageData) => {
   if (payload) send(payload)
 }
 
-const startWebsocket = (port = 7071) => {
+const startUpdates = () => {
   const manager = SceneManager.sharedInstance();
-  wss = new WebSocket.Server({ port: port });
-  wss.binaryType = 'arraybuffer';
+  manager.playing.removeListener('update', send) // just in case, remove any existing listeners
+  manager.playing.on('update', update)
+}
+
+const startWebsocket = (port = 7071) => {
+  wss = new WebSocket.Server({ port: port, binaryType: 'arraybuffer'});
   wss.on('connection', (ws) => {
     socket = ws;
-
     ws.on('message', receive);
-    manager.playing.removeListener('update', send) // just in case, remove any existing listeners
-    manager.playing.on('update', update)
+    startUpdates();
   })
   
   wss.on('close', () => {
+    const manager = SceneManager.sharedInstance();
     manager.playing.removeListener('update', send)
   });
 }

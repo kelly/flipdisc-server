@@ -21,14 +21,6 @@ export default class SceneManager {
     this._registerEvents()
   }
 
-  async _autoPlayIfEnabled() {
-    if (this.isPlayingScene) return
-    if (this.options.autoPlay && this.scenes?.length > 0) {
-      const item = this.queue.hasItems ? this.queue.next() : { id: 0 }
-      this.play(item)
-    }
-  }
-
   async loadLocal(dir = this.options.sceneDir) {
     this.importer = new SceneImporter(dir);
     const scenes = await this.importer.loadAll()
@@ -40,11 +32,25 @@ export default class SceneManager {
 
   async play(item) {
     item.sceneObj = this.getScene(item.id)
-    item.duration = this.configureDuration(item)
+    item.duration = this._configureDuration(item)
     return this.playing.set(item)
   }
 
-  configureDuration(item) {
+  getScene(idx) {
+    if (idx >= 0 && idx < this.scenes.length) {
+      return this.scenes[idx]
+    }
+  }
+
+  async _autoPlayIfEnabled() {
+    if (this.isPlayingScene) return
+    if (this.options.autoPlay && this.scenes?.length > 0) {
+      const item = this.queue.hasItems ? this.queue.next() : { id: 0 }
+      this.play(item)
+    }
+  }
+
+  _configureDuration(item) {
     if (item.duration !== undefined) {
       return item.duration;
     }
@@ -56,18 +62,12 @@ export default class SceneManager {
     return undefined; 
   }
 
-  getScene(idx) {
-    if (idx >= 0 && idx < this.scenes.length) {
-      return this.scenes[idx]
-    }
-  }
-
-  getSceneIdFromTitle(title) {
+  _getSceneIdFromTitle(title) {
     return this.scenes.findIndex(scene => scene.schema.title == title)
   }
 
-  updateScene(scene) {
-    const id = this.getSceneIdFromTitle(scene.schema.title)
+  _updateScene(scene) {
+    const id = this._getSceneIdFromTitle(scene.schema.title)
     if (id) {
       this.scenes[id] = this._decorateIdScene(scene, id)
       if (this.playing.id == id) this.play({ id })
@@ -78,21 +78,6 @@ export default class SceneManager {
     scene.schema.id = id
     if (scene.task) scene.task.id = id
     return scene
-  }
-
-  get isPlayingScene() {
-    return this.playing.isPlaying
-  }
-
-  get scenes() {
-    return this._scenes;
-  }
-
-  set scenes(scenes) {
-    scenes?.map((scene, idx) => {
-      this._decorateIdScene(scene, idx)
-    })
-    this._scenes = scenes;
   }
 
   _registerEvents() {
@@ -109,6 +94,21 @@ export default class SceneManager {
       this.queue?.destroy();
       process.removeAllListeners()
     });
+  }
+
+  get isPlayingScene() {
+    return this.playing.isPlaying
+  }
+
+  get scenes() {
+    return this._scenes;
+  }
+
+  set scenes(scenes) {
+    scenes?.map((scene, idx) => {
+      this._decorateIdScene(scene, idx)
+    })
+    this._scenes = scenes;
   }
 
   static sharedInstance() {

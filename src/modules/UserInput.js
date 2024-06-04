@@ -13,7 +13,7 @@ export default class UserInputModule extends Module {
 
   load() {}
 
-  add(point, size, isEnd) {
+  add({point, size, isEnd}) {
     if (!this.isEnd) this.fillPointsBetweenLastPoint(point, size)
     this.isEnd = isEnd
     if (!this.touchExists(point)) {
