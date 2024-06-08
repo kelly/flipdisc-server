@@ -106,10 +106,11 @@ class Scene extends EventEmitter {
   }
 
   _mergeLayers(layers) {
-    layers = layers.filter((l) => l).map((l) => (isImageData(l) 
-      ? formatRGBAPixels(l, this.width, this.height) 
+    layers = layers.filter((l) => l)
+      .map((l) => (isImageData(l)
+      ? formatRGBAPixels(l, this.width, this.height)
       : l));
-    return layers ? Utils.mergeFrames(layers) : null;
+    return layers.length ? Utils.mergeFrames(layers) : null;
   }
 
   _render(inputData) {
@@ -147,11 +148,9 @@ class Scene extends EventEmitter {
   }
 
   _moduleForView(v) {
-    const module =  Object.values(modules).find((m) => {
-      if (typeof m.isValidInstance === 'function') {
-        return m.isValidInstance(v)
-      }
-    });
+    const module = Object.values(modules)
+      .find((m) => typeof m.isValidInstance === 'function' && m.isValidInstance(v)
+    );
     return this._findOrCreateModule(module);
   }
 
@@ -201,7 +200,7 @@ class Scene extends EventEmitter {
   }
 
   get context() {
-    return this.canvas.getContext('2d');
+    return this.canvas?.getContext('2d');
   }
 
   get moduleImageData() {
@@ -225,7 +224,7 @@ class Scene extends EventEmitter {
   }
 
   get isStatic() {
-    return !this.loops;
+    return this.loops.length === 0;
   }
 
   _isNewImageData(data) {
