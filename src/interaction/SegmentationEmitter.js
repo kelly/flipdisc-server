@@ -1,5 +1,4 @@
 import InteractionEmitter from "./Interaction.js";
-import appRoot from 'app-root-path';
 import path from 'path';
 import Display from '../Display.js';
 import { fileURLToPath } from 'url';
