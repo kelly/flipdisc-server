@@ -9,6 +9,7 @@ import platform
 import signal
 from mediapipe.tasks.python import vision
 from skimage.transform import resize
+from skimage import img_as_float64
 
 # https://github.com/lavindude/GestureController/blob/b36881ee8509cb5294f9664fef86bc83e7d3d3d9/main.py#L39
 # Constants
@@ -59,7 +60,7 @@ def parse_arguments():
   parser.add_argument('--port', type=int,  help='Camera port (default: 0')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
-  parser.add_argument('--model', type=str, default='./resources/models/pose_landmarker_full.task', help='Model file path (default: ./resources/models/pose_landmarker_full.task)')
+  parser.add_argument('--model', type=str, default='./resources/models/pose_landmarker_lite.task', help='Model file path (default: ./resources/models/pose_landmarker_lite.task)')
   return parser.parse_args()
 
 # Cleanup function
@@ -101,22 +102,10 @@ def mask_to_image_data(mask_view, output_image):
   elif output_image.shape[-1] != 4:  # Not RGBA or RGB
       raise ValueError("Input image must be in RGBA or RGB format")
   
-  return output_image.flatten().tolist()
-
-def resize_image_data(array, rows, cols):
-    array = np.array(array)
-    resized_array = resize(array, (rows, cols), anti_aliasing=True, preserve_range=True)
-    resized_array = np.where(resized_array > 127, 255, 0).astype(np.uint8)
-    rgba_array = np.stack([resized_array]*4, axis=-1)
-    rgba_array[:, :, 3] = 255
-    image_data = rgba_array.flatten()
-    
-    return image_data
+  return output_image.flatten()
 
 # Resize image and send
-def resize_and_send(image, landmarks=None):
-  image = resize_image_data(image, height, width)
-  print(image)
+def send(image, landmarks=None):
   socket.send_json({
     'image': image.tolist(),
     'landmarks': landmarks
@@ -126,10 +115,11 @@ def resize_and_send(image, landmarks=None):
 def frame_callback(result, output_image, timestamp_ms):
   mask = result.segmentation_masks[0] if result.segmentation_masks else None
   if mask:
-    mask_view = mask.numpy_view()
-    image = mask_to_image_data(mask_view, output_image.numpy_view()) if len(mask_view[0][0]) == 3 else array_to_image_data(mask_view)
+    mask_view = cv2.resize(mask.numpy_view(), (width, height))
+    output_image = cv2.resize(output_image.numpy_view(), (width, height))
+    image = mask_to_image_data(mask_view, output_image) if isinstance(mask_view[0][0], np.float32) else array_to_image_data(mask_view)
     landmarks = to_landmark_dict(result.pose_landmarks[0]) 
-    resize_and_send(image, landmarks)
+    send(image, landmarks)
 
 # Capture frame
 def capture():
