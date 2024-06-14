@@ -1,2 +1,3 @@
-/resources/models
+/resources/models/ggml-base.en.bin
+/resources/models/ggml-small.en.bin
 .DS_Store

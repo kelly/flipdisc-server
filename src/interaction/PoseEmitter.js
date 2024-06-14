@@ -5,17 +5,21 @@ import appRoot from 'app-root-path';
 import path from 'path';
 
 const file = path.join(appRoot.path, './scripts/pose.py')
-const model = path.join(appRoot.path, './resources/models/pose_landmarker_full.task')
+const defaultModel = path.join(appRoot.path, './resources/models/pose_landmarker_full.task')
 
-
-export default function PoseEmitter()  {
+export default function PoseEmitter({device = '/dev/video0', port, model})  {
   const { width, height } = Display.size()
+  if (!model) model = defaultModel
+
   const script = {
     channel: 'ipc:///tmp/pose-data',
     file,
     model: './resources/models/pose_landmarker_full.task',
-    args: ['--port', '1', '--width', `${width}`, '--height', `${height}`, '--model', model]
+    args: ['--width', `${width}`, '--height', `${height}`, '--model', model]
   }
+
+  if (port) script.args.push('--port', port)
+  if (device) script.args.push('--device', device)
   
   const motionTriggers = [
     ['left_wrist',

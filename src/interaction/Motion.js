@@ -54,10 +54,10 @@ export default class MotionEmitter extends InteractionEmitter {
         return this._moveOne(filteredLandmarks, this._filteredHistory(idx))
       });
     } else {
-      const gesture = data.gestures ? data.gestures[0] : null
-      mData = this._moveOne(landmarks, this.history, gesture)
+      mData = this._moveOne(landmarks, this.history, data.gesture)
     }
 
+    mData.gesture = data.gesture
     return mData;
   }
 

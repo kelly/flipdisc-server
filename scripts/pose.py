@@ -5,7 +5,10 @@ import zmq
 import time
 import atexit
 import mediapipe as mp
+import platform
+import signal
 from mediapipe.tasks.python import vision
+from skimage.transform import resize
 
 # https://github.com/lavindude/GestureController/blob/b36881ee8509cb5294f9664fef86bc83e7d3d3d9/main.py#L39
 # Constants
@@ -48,10 +51,12 @@ LANDMARK_LABELS = [
   'right_foot_index'
 ];
 
+
 # Parse command-line arguments
 def parse_arguments():
   parser = argparse.ArgumentParser(description='Process camera frames with MediaPipe PoseLandmarker.')
-  parser.add_argument('--port', type=int, default=1, help='Camera port (default: 0)')
+  parser.add_argument('--device', type=str, default='/dev/video0', help='Camera port (default: /dev/video0)')
+  parser.add_argument('--port', type=int,  help='Camera port (default: 0')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
   parser.add_argument('--model', type=str, default='./resources/models/pose_landmarker_full.task', help='Model file path (default: ./resources/models/pose_landmarker_full.task)')
@@ -76,47 +81,74 @@ def to_landmark_dict(landmarks):
       }
   return landmark_dict
 
+def array_to_image_data(array):
+  array = np.array(array)
+  array = np.stack([array]*4, axis=-1)
+  array[:, :, 3] = 255
+  image_data = array.flatten()
+  
+  return image_data
+
 # Convert image to ImageData format
-def to_image_data(numpy_image):
-  if numpy_image.shape[-1] == 3:  # RGB image
-      numpy_image = np.concatenate([numpy_image, np.ones((*numpy_image.shape[:-1], 1), dtype=numpy_image.dtype) * 255], axis=-1)
-  elif numpy_image.shape[-1] != 4:  # Not RGBA or RGB
+def mask_to_image_data(mask_view, output_image):
+  fg_image = np.full_like(output_image, MASK_COLOR, dtype=np.uint8)
+  bg_image = np.full_like(output_image, BG_COLOR, dtype=np.uint8)
+  condition = np.stack((mask_view,) * 3, axis=-1) > 0.3
+  output_image = np.where(condition, fg_image, bg_image)
+
+  if output_image.shape[-1] == 3:  # RGB image
+      output_image = np.concatenate([output_image, np.ones((*output_image.shape[:-1], 1), dtype=output_image.dtype) * 255], axis=-1)
+  elif output_image.shape[-1] != 4:  # Not RGBA or RGB
       raise ValueError("Input image must be in RGBA or RGB format")
-  return numpy_image.flatten().tolist()
+  
+  return output_image.flatten().tolist()
+
+def resize_image_data(array, rows, cols):
+    array = np.array(array)
+    resized_array = resize(array, (rows, cols), anti_aliasing=True, preserve_range=True)
+    resized_array = np.where(resized_array > 127, 255, 0).astype(np.uint8)
+    rgba_array = np.stack([resized_array]*4, axis=-1)
+    rgba_array[:, :, 3] = 255
+    image_data = rgba_array.flatten()
+    
+    return image_data
 
 # Resize image and send
 def resize_and_send(image, landmarks=None):
-  img = cv2.resize(image, (width, height))
+  image = resize_image_data(image, height, width)
+  print(image)
   socket.send_json({
-    'image': to_image_data(img),
+    'image': image.tolist(),
     'landmarks': landmarks
   })
 
 # Frame callback function
 def frame_callback(result, output_image, timestamp_ms):
-  category_mask = result.segmentation_masks[0] if result.segmentation_masks else None
-  if category_mask:
-    fg_image = np.full_like(output_image.numpy_view(), MASK_COLOR, dtype=np.uint8)
-    bg_image = np.full_like(output_image.numpy_view(), BG_COLOR, dtype=np.uint8)
-    condition = np.stack((category_mask.numpy_view(),) * 3, axis=-1) > 0.3
-    output_image = np.where(condition, fg_image, bg_image)
-
-    landmarks = to_landmark_dict(result.pose_landmarks[0])
-    resize_and_send(output_image, landmarks)
+  mask = result.segmentation_masks[0] if result.segmentation_masks else None
+  if mask:
+    mask_view = mask.numpy_view()
+    image = mask_to_image_data(mask_view, output_image.numpy_view()) if len(mask_view[0][0]) == 3 else array_to_image_data(mask_view)
+    landmarks = to_landmark_dict(result.pose_landmarks[0]) 
+    resize_and_send(image, landmarks)
 
 # Capture frame
 def capture():
   ret, photo = cam.read() 
   frame_timestamp_ms = int(time.time() * 1000.0)
   photo = cv2.flip(photo, 1)
+  photo = cv2.resize(photo, (320, 240))
   image = mp.Image(image_format=mp.ImageFormat.SRGB, data=photo)
-  detection_result = detector.detect_async(image, frame_timestamp_ms)
+  result = detector.detect_async(image, frame_timestamp_ms)
+
+def signal_handler(sig, frame):
+  cleanup()
+  exit(0)
 
 # Main function
 def main():
   args = parse_arguments()
   global cam, width, height, socket, context, detector
-  cam_port = args.port
+  cam_port = args.port if args.port else args.device
   width = args.width
   height = args.height
   cam = cv2.VideoCapture(cam_port) 
@@ -126,11 +158,13 @@ def main():
   socket = context.socket(zmq.PUB)
   socket.bind(SOCKET_PATH)
 
+  delegate = mp.tasks.BaseOptions.Delegate.CPU if platform.system() == 'Darwin' else mp.tasks.BaseOptions.Delegate.GPU
+
+
   # Create PoseLandmarker
-  base_options = mp.tasks.BaseOptions(model_asset_path=args.model, delegate='GPU')
+  base_options = mp.tasks.BaseOptions(model_asset_path=args.model, delegate=delegate)
   options = vision.PoseLandmarkerOptions(
     base_options=base_options,
-
     running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
     output_segmentation_masks=True,
     result_callback=frame_callback)
@@ -138,10 +172,15 @@ def main():
 
   # Register cleanup function
   atexit.register(cleanup)
+  signal.signal(signal.SIGINT, signal_handler)
+  signal.signal(signal.SIGTERM, signal_handler)
 
   # Main loop
-  while True:
-    capture()
+  try:
+    while cam.isOpened():
+      capture()
+  except Exception as e:
+    cleanup()
 
 if __name__ == '__main__':
   main()

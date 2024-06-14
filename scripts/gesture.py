@@ -5,6 +5,8 @@ import zmq
 import time
 import atexit
 import mediapipe as mp
+import platform
+import signal
 from mediapipe.tasks.python import vision
 # https://github.com/lavindude/GestureController/blob/b36881ee8509cb5294f9664fef86bc83e7d3d3d9/main.py#L39
 # Constants
@@ -36,7 +38,8 @@ LANDMARK_LABELS = [
 # Parse command-line arguments
 def parse_arguments():
   parser = argparse.ArgumentParser(description='Process camera frames with MediaPipe PoseLandmarker.')
-  parser.add_argument('--port', type=int, default=1, help='Camera port (default: 0)')
+  parser.add_argument('--device', type=str, default='/dev/video0', help='Camera port (default: /dev/video0)')
+  parser.add_argument('--port', type=int,  help='Camera port (default: 0')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
   parser.add_argument('--hands', type=int, default=1, help='Number of hands to detect (default: 1)')
@@ -84,7 +87,6 @@ def frame_callback(result: mp.tasks.vision.GestureRecognizerResult, output_image
 
   send(gestures, landmarks)
     
-
 # Capture frame
 def capture():
   ret, photo = cam.read() 
@@ -93,36 +95,46 @@ def capture():
   image = mp.Image(image_format=mp.ImageFormat.SRGB, data=photo)
   detector.recognize_async(image, frame_timestamp_ms)
 
+def signal_handler(sig, frame):
+  cleanup()
+  exit(0)
+
 # Main function
 def main():
-    args = parse_arguments()
-    global cam, width, height, socket, context, detector
-    cam_port = args.port
-    width = args.width
-    height = args.height
-    cam = cv2.VideoCapture(cam_port) 
+  args = parse_arguments()
+  global cam, width, height, socket, context, detector
+  cam_port = args.port if args.port else args.device
+  width = args.width
+  height = args.height
+  cam = cv2.VideoCapture(cam_port) 
 
-    # Initialize ZeroMQ socket
-    context = zmq.Context()
-    socket = context.socket(zmq.PUB)
-    socket.bind(SOCKET_PATH)
+  # Initialize ZeroMQ socket
+  context = zmq.Context()
+  socket = context.socket(zmq.PUB)
+  socket.bind(SOCKET_PATH)
 
-    # Create PoseLandmarker
-    options = mp.tasks.vision.GestureRecognizerOptions(
-      base_options=mp.tasks.BaseOptions(model_asset_path=args.model, delegate='GPU'),
-      num_hands=args.hands,
-      running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
-      result_callback=frame_callback)
+  delegate = mp.tasks.BaseOptions.Delegate.CPU if platform.system() == 'Darwin' else mp.tasks.BaseOptions.Delegate.GPU
 
-    detector = vision.GestureRecognizer.create_from_options(options)
+  # Create PoseLandmarker
+  options = mp.tasks.vision.GestureRecognizerOptions(
+    base_options=mp.tasks.BaseOptions(model_asset_path=args.model, delegate=delegate),
+    num_hands=args.hands,
+    running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
+    result_callback=frame_callback)
+
+  detector = vision.GestureRecognizer.create_from_options(options)
 
 
-    # Register cleanup function
-    atexit.register(cleanup)
+  # Register cleanup function
+  atexit.register(cleanup)
+  signal.signal(signal.SIGINT, signal_handler)
+  signal.signal(signal.SIGTERM, signal_handler)
 
-    # Main loop
-    while True:
+  try:
+    while cam.isOpened():
       capture()
+  except Exception as e:
+    cleanup()
 
 if __name__ == '__main__':
     main()
