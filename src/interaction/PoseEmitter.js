@@ -1,11 +1,14 @@
 // update event return { image: Array, landmarks: Object }
 import MotionEmitter from "./Motion.js";
 import Display from '../Display.js';
-import appRoot from 'app-root-path';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const file = path.join(appRoot.path, './scripts/pose.py')
-const defaultModel = path.join(appRoot.path, './resources/models/pose_landmarker_full.task')
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const file = path.join(__dirname, '../../scripts/pose.py')
+const defaultModel = path.join(__dirname, '../../resources/models/pose_landmarker_full.task')
 
 export default function PoseEmitter({device = '/dev/video0', port, model})  {
   const { width, height } = Display.size()

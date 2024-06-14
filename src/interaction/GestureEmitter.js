@@ -1,12 +1,17 @@
 import MotionEmitter from "./Motion.js";
-import appRoot from 'app-root-path';
 import path from 'path';
 import Display from '../Display.js';
+import { fileURLToPath } from 'url';
 
-const file = path.join(appRoot.path, './scripts/gesture.py')
-const defaultModel = path.join(appRoot.path, './resources/models/gesture_recognizer.task')
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const file = path.join(__dirname, '../../scripts/gesture.py')
+const defaultModel = path.join(__dirname, '../../resources/models/gesture_recognizer.task')
 
 export default function GestureEmitter({device = '/dev/video0', port, model}) {
+  console.log(file)
+  console.log(defaultModel)
   const { width, height } = Display.size()
   if (!model) model = defaultModel
 

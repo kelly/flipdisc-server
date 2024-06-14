@@ -1,7 +1,7 @@
 import { Container, Assets, BitmapText, TextStyle, Text } from '@pixi/node';
 import BaseView from './BaseView.js';
 import path from 'path';
-import appRoot from 'app-root-path';
+import { fileURLToPath } from 'url';
 
 const fonts = [
   { path: 'tb-8-2.fnt', size: 6, name: 'tb-8' },
@@ -9,7 +9,10 @@ const fonts = [
   { path: 'tom-thumb.fnt', size: 6, name: 'tom-thumb' }
 ];
 
-const fontPath = './resources/fonts';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const fontPath = '../../resources/fonts';
 
 const defaults = {
   fontName: 'cg',
@@ -19,7 +22,7 @@ const defaults = {
 };
 
 function bitmapFontForName(name) { return fonts.find(font => font.name === name) }
-function fontPaths() { return fonts.map(font => path.join(appRoot.path, fontPath, font.path))}
+function fontPaths() { return fonts.map(font => path.join(__dirname, fontPath, font.path))}
 
 export default class TextView extends BaseView {
 

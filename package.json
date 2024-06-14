@@ -19,7 +19,6 @@
     "@pixi/filter-dot": "^5.1.1",
     "@pixi/filter-glow": "^5.2.1",
     "@pixi/node": "^7.3.0",
-    "app-root-path": "^3.1.0",
     "flipdisc": "^0.0.6",
     "glslify": "^7.1.1",
     "gsap": "^3.12.5",

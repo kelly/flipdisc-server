@@ -1,9 +1,12 @@
 import InteractionManager from './Interaction.js';
-import appRoot from 'app-root-path';
 import path from 'path';
 import Module from '../modules/Module.js';
+import { fileURLToPath } from 'url';
 
-const model = path.join(appRoot.path, './resources/models/ggml-small.en.bin')
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const model = path.join(__dirname, '../../resources/models/ggml-small.en.bin')
 const voiceDefaultOptions = {
   trigger: 'flip'
 }

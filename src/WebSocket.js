@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import SceneManager from './SceneManager.js';
 import { LiveSceneMessage, UserInputMessage } from './Message.js';
 
@@ -33,7 +33,7 @@ const startUpdates = () => {
 }
 
 const startWebsocket = (port = 7071) => {
-  wss = new WebSocket.Server({ port: port, binaryType: 'arraybuffer'});
+  wss = new WebSocketServer({ port: port, binaryType: 'arraybuffer'});
   wss.on('connection', (ws) => {
     socket = ws;
     ws.on('message', receive);

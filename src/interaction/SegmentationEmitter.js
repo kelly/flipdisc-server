@@ -2,9 +2,13 @@ import InteractionEmitter from "./Interaction.js";
 import appRoot from 'app-root-path';
 import path from 'path';
 import Display from '../Display.js';
+import { fileURLToPath } from 'url';
 
-const file = path.join(appRoot.path, './scripts/segmentation.py')
-const defaultModel = path.join(appRoot.path, './resources/models/selfie_segmenter_landscape.tflite')
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const file = path.join(__dirname, '../../scripts/segmentation.py');
+const defaultModel = path.join(__dirname, '../../resources/models/selfie_segmenter_landscape.tflite')
 
 export default function SegmentationEmitter({device = '/dev/video0', port, model}) {
   const { width, height } = Display.size()
