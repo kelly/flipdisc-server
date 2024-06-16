@@ -2,7 +2,6 @@ import BaseView from './BaseView.js';
 import TextView from './TextView.js';
 import { Graphics } from '@pixi/graphics';
 import { GlowFilter } from '@pixi/filter-glow';
-import * as PIXI from '@pixi/node'
 import { gsap } from 'gsap';
 
 export default class BackgroundTextView extends BaseView {

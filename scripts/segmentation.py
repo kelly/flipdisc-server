@@ -61,7 +61,9 @@ def frame_callback(result, output_image, timestamp_ms):
 def capture():
   ret, photo = cam.read() 
   frame_timestamp_ms = int(time.time() * 1000.0)
-  image = mp.Image(image_format=mp.ImageFormat.SRGB, data=photo)
+  image_format = mp.ImageFormat.SRGBA if platform.system() == 'Darwin' else mp.ImageFormat.SRGB
+  color_format = cv2.COLOR_BGR2RGBA if platform.system() == 'Darwin' else cv2.COLOR_BGR2RGB
+  image = mp.Image(image_format=image_format, data=cv2.cvtColor(photo, color_format))
   result = segmenter.segment_async(image, frame_timestamp_ms)
 
 def signal_handler(sig, frame):
@@ -82,10 +84,8 @@ def main():
   socket = context.socket(zmq.PUB)
   socket.bind(SOCKET_PATH)
 
-  delegate = mp.tasks.BaseOptions.Delegate.CPU if platform.system() == 'Darwin' else mp.tasks.BaseOptions.Delegate.GPU
-
   # Create PoseLandmarker
-  base_options = mp.tasks.BaseOptions(model_asset_path=args.model, delegate=delegate)
+  base_options = mp.tasks.BaseOptions(model_asset_path=args.model, delegate=mp.tasks.BaseOptions.Delegate.GPU)
   options = vision.ImageSegmenterOptions(
     base_options=base_options,
     running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,

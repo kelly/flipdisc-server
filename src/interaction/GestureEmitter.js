@@ -9,9 +9,7 @@ const __dirname = path.dirname(__filename);
 const file = path.join(__dirname, '../../scripts/gesture.py')
 const defaultModel = path.join(__dirname, '../../resources/models/gesture_recognizer.task')
 
-export default function GestureEmitter({device = '/dev/video0', port, model}) {
-  console.log(file)
-  console.log(defaultModel)
+export default function GestureEmitter({device, port, model}) {
   const { width, height } = Display.size()
   if (!model) model = defaultModel
 
@@ -20,8 +18,9 @@ export default function GestureEmitter({device = '/dev/video0', port, model}) {
     file,
     args: ['--width', `${width}`, '--height', `${height}`, '--hands', 1, '--model', model]
   }
-  if (port) script.args.push('--port', port)
-  if (device) script.args.push('--device', device)
+
+  if (port !== undefined) script.args.push('--port', port)
+  if (device !== undefined) script.args.push('--device', device)
 
   return new MotionEmitter(script)
 }

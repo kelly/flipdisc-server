@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const file = path.join(__dirname, '../../scripts/pose.py')
 const defaultModel = path.join(__dirname, '../../resources/models/pose_landmarker_full.task')
 
-export default function PoseEmitter({device = '/dev/video0', port, model})  {
+export default function PoseEmitter({device, port, model})  {
   const { width, height } = Display.size()
   if (!model) model = defaultModel
 
@@ -21,8 +21,8 @@ export default function PoseEmitter({device = '/dev/video0', port, model})  {
     args: ['--width', `${width}`, '--height', `${height}`, '--model', model]
   }
 
-  if (port) script.args.push('--port', port)
-  if (device) script.args.push('--device', device)
+  if (port !== undefined) script.args.push('--port', port)
+  if (device !== undefined) script.args.push('--device', device)
   
   const motionTriggers = [
     ['left_wrist',

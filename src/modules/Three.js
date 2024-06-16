@@ -40,6 +40,12 @@ export default class ThreeModule extends Module {
     }
   }
 
+  remove(view) {
+    if (ThreeModule.isValidInstance(view)) {
+      this.scene.remove(view);
+    }
+  }
+
   async load() {
     if (this.isLoaded) return
     
@@ -109,7 +115,7 @@ export default class ThreeModule extends Module {
   }
 
   static isValidInstance(view) {
-    return view instanceof THREE.Object3D
+    return view instanceof THREE.Object3D || view.mesh 
   }
 
   destroy() {

@@ -60,7 +60,7 @@ def parse_arguments():
   parser.add_argument('--port', type=int,  help='Camera port (default: 0')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
-  parser.add_argument('--model', type=str, default='./resources/models/pose_landmarker_lite.task', help='Model file path (default: ./resources/models/pose_landmarker_lite.task)')
+  parser.add_argument('--model', type=str, default='./resources/models/pose_landmarker_full.task', help='Model file path (default: ./resources/models/pose_landmarker_lite.task)')
   return parser.parse_args()
 
 # Cleanup function
@@ -126,8 +126,7 @@ def capture():
   ret, photo = cam.read() 
   frame_timestamp_ms = int(time.time() * 1000.0)
   photo = cv2.flip(photo, 1)
-  photo = cv2.resize(photo, (320, 240))
-  image = mp.Image(image_format=mp.ImageFormat.SRGB, data=photo)
+  image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(photo, cv2.COLOR_BGR2RGB))
   result = detector.detect_async(image, frame_timestamp_ms)
 
 def signal_handler(sig, frame):
@@ -148,11 +147,8 @@ def main():
   socket = context.socket(zmq.PUB)
   socket.bind(SOCKET_PATH)
 
-  delegate = mp.tasks.BaseOptions.Delegate.CPU if platform.system() == 'Darwin' else mp.tasks.BaseOptions.Delegate.GPU
-
-
   # Create PoseLandmarker
-  base_options = mp.tasks.BaseOptions(model_asset_path=args.model, delegate=delegate)
+  base_options = mp.tasks.BaseOptions(model_asset_path=args.model, delegate=mp.tasks.BaseOptions.Delegate.CPU)
   options = vision.PoseLandmarkerOptions(
     base_options=base_options,
     running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,

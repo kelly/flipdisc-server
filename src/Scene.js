@@ -155,6 +155,7 @@ class Scene extends EventEmitter {
   }
 
   _findOrCreateModule(c) {
+    if (!c) return;
     let m = this.modules.find((m) => m instanceof c);
     if (!m) {
       m = new c(this.canvas);

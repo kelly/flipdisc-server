@@ -39,7 +39,7 @@ LANDMARK_LABELS = [
 def parse_arguments():
   parser = argparse.ArgumentParser(description='Process camera frames with MediaPipe PoseLandmarker.')
   parser.add_argument('--device', type=str, default='/dev/video0', help='Camera port (default: /dev/video0)')
-  parser.add_argument('--port', type=int,  help='Camera port (default: 0')
+  parser.add_argument('--port', type=int, help='Camera port (default: 0')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
   parser.add_argument('--hands', type=int, default=1, help='Number of hands to detect (default: 1)')
@@ -92,7 +92,9 @@ def capture():
   ret, photo = cam.read() 
   frame_timestamp_ms = int(time.time() * 1000.0)
   photo = cv2.flip(photo, 1)
-  image = mp.Image(image_format=mp.ImageFormat.SRGB, data=photo)
+  image_format = mp.ImageFormat.SRGBA if platform.system() == 'Darwin' else mp.ImageFormat.SRGB
+  color_format = cv2.COLOR_BGR2RGBA if platform.system() == 'Darwin' else cv2.COLOR_BGR2RGB
+  image = mp.Image(image_format=image_format, data=cv2.cvtColor(photo, color_format))
   detector.recognize_async(image, frame_timestamp_ms)
 
 def signal_handler(sig, frame):
@@ -107,23 +109,21 @@ def main():
   width = args.width
   height = args.height
   cam = cv2.VideoCapture(cam_port) 
+  print(cam_port)
 
   # Initialize ZeroMQ socket
   context = zmq.Context()
   socket = context.socket(zmq.PUB)
   socket.bind(SOCKET_PATH)
 
-  delegate = mp.tasks.BaseOptions.Delegate.CPU if platform.system() == 'Darwin' else mp.tasks.BaseOptions.Delegate.GPU
-
   # Create PoseLandmarker
   options = mp.tasks.vision.GestureRecognizerOptions(
-    base_options=mp.tasks.BaseOptions(model_asset_path=args.model, delegate=delegate),
+    base_options=mp.tasks.BaseOptions(model_asset_path=args.model, delegate=mp.tasks.BaseOptions.Delegate.GPU),
     num_hands=args.hands,
     running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
     result_callback=frame_callback)
 
   detector = vision.GestureRecognizer.create_from_options(options)
-
 
   # Register cleanup function
   atexit.register(cleanup)
