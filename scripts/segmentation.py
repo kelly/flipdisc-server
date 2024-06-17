@@ -19,7 +19,7 @@ SOCKET_PATH = 'ipc:///tmp/segmentation-data'
 def parse_arguments():
   parser = argparse.ArgumentParser(description='Process camera frames with MediaPipe PoseLandmarker.')
   parser.add_argument('--device', type=str, default='/dev/video0', help='Camera port (default: /dev/video0)')
-  parser.add_argument('--port', type=int,  help='Camera port (default: 0')
+  parser.add_argument('--port', type=int, default=0, help='Camera port (default: 0')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
   parser.add_argument('--model', type=str, default='./resources/models/selfie_segmenter_landscape.tflite', help='Model file path (default: ./resources/models/selfie_segmenter_landscape.tflite)')
