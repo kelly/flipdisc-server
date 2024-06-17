@@ -7,8 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./server.js",
-    "package": "npx rollup index.js --file index.cjs --format cjs",
-    "postinstall": "pip install pyzmq opencv-python mediapipe"
+    "package": "npx rollup index.js --file index.cjs --format cjs"
   },
   "author": "",
   "license": "ISC",
