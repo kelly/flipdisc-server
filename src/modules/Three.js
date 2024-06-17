@@ -115,7 +115,7 @@ export default class ThreeModule extends Module {
   }
 
   static isValidInstance(view) {
-    return view instanceof THREE.Object3D || view.mesh 
+    return view instanceof THREE.Object3D || view.isObject3D
   }
 
   destroy() {
