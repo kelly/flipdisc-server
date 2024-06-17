@@ -32,7 +32,7 @@ export default class InteractionEmitter extends EventEmitter {
 
     const args =  (script.file) ? [script.file, ...script.args] : script.args;
 
-    this.process = spawn(script.command || 'python', args);
+    this.process = spawn(script.command || 'python3', args);
     this.process
       .once('error', (err) => {
         logger.error(`Failed to start child process: ${err}`);

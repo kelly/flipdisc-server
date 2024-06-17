@@ -5,7 +5,7 @@ import logger from './Logger.js'
 import Renderer from './Renderer.js';
 
 const defaults = {
-  isRecording: true
+  isRecording: false
 }
 
 export default class Playing extends EventEmitter {
