@@ -74,10 +74,9 @@ def signal_handler(sig, frame):
 def main():
   args = parse_arguments()
   global cam, width, height, socket, context, segmenter
-  cam_port = args.port if args.port else args.device
   width = args.width
   height = args.height
-  cam = cv2.VideoCapture(cam_port) 
+  cam = cv2.VideoCapture(args.port) 
 
   # Initialize ZeroMQ socket
   context = zmq.Context()
