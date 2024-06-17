@@ -8,8 +8,6 @@ import mediapipe as mp
 import platform
 import signal
 from mediapipe.tasks.python import vision
-from skimage.transform import resize
-from skimage import img_as_float64
 
 # https://github.com/lavindude/GestureController/blob/b36881ee8509cb5294f9664fef86bc83e7d3d3d9/main.py#L39
 # Constants
