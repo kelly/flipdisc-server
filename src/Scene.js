@@ -71,6 +71,10 @@ class Scene extends EventEmitter {
     this.context.clearRect(0, 0, this.width, this.height);
   }
 
+  drawImage(img, x = 0, y = 0, width = this.width, height = this.height) {
+    this.context.drawImage(img, x, y, width, height);
+  }
+
   useLoop(fn, fps = this.fps) {
     this.loops.push({ fn, fps, lastExecution: 0 });
   }
