@@ -28,9 +28,32 @@ class MyDisplay extends Display {
 
     const { layout, devices, options } = config
     if (!display) {
-      display = new MyDisplay(layout, devices, options)
+      try {
+        display = new Display(layout, devices, options)
+      } catch (e) {
+        logger.info('Could not connect to display. Continuing in development mode.', e)
+        display = new MockDisplay(layout, devices, options)
+      }
     }
     return display
+  }
+}
+
+
+class MockDisplay {
+
+  constructor(layout, devices, options) {
+    this.layout = layout
+    this.devices = devices
+    this.options = options
+    this.width = layout.width
+    this.height = layout.height
+  }
+
+  async send(data) {}
+
+  info() {
+    return { width: this.width, height: this.height }
   }
 }
 
