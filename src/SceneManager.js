@@ -42,6 +42,14 @@ export default class SceneManager {
     }
   }
 
+  updateScene(scene) {
+    const id = this._getSceneIdFromTitle(scene.schema.title)
+    if (id) {
+      this.scenes[id] = this._decorateIdScene(scene, id)
+      if (this.playing.id == id) this.play({ id })
+    }
+  }
+
   async _autoPlayIfEnabled() {
     if (this.isPlayingScene) return
     if (this.options.autoPlay && this.scenes?.length > 0) {
@@ -64,14 +72,6 @@ export default class SceneManager {
 
   _getSceneIdFromTitle(title) {
     return this.scenes.findIndex(scene => scene.schema.title == title)
-  }
-
-  _updateScene(scene) {
-    const id = this._getSceneIdFromTitle(scene.schema.title)
-    if (id) {
-      this.scenes[id] = this._decorateIdScene(scene, id)
-      if (this.playing.id == id) this.play({ id })
-    }
   }
 
   _decorateIdScene(scene, id) {

@@ -1,6 +1,8 @@
 import { Container } from '@pixi/node';
 import Display from '../Display.js';
 import DitherFilter from './filters/DitherFilter.js';
+import { initializeLayout } from 'pixi-flex-layout';
+import { PixiPlugin } from 'gsap/dist/PixiPlugin.js';
 
 export default class BaseView extends Container {
   constructor(...props) {
@@ -38,6 +40,15 @@ export default class BaseView extends Container {
 
   static baseSize() {
     return Display.size()
+  }
+
+  static registerPIXI(PIXI, gsap) {
+    initializeLayout(PIXI.DisplayObject.prototype, PIXI.Container.prototype);
+    gsap.registerPlugin(PixiPlugin);
+    PixiPlugin.registerPIXI({
+      DisplayObject: PIXI.DisplayObject,
+      Graphics: PIXI.Graphics,
+    })
   }
 
   dither() {

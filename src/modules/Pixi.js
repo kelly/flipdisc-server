@@ -1,22 +1,12 @@
 import { Application, Assets, utils, DisplayObject, Container, Graphics } from '@pixi/node';
+import * as PIXI from '@pixi/node'
 import Display from '../Display.js';
 import Module from './Module.js';
 import BaseView from '../views/BaseView.js';
-import { initializeLayout, layoutSetRenderer, removeLayoutRenderer } from 'pixi-flex-layout';
+import { layoutSetRenderer, removeLayoutRenderer } from 'pixi-flex-layout';
 import { gsap } from 'gsap';
-import { PixiPlugin } from 'gsap/dist/PixiPlugin.js';
 
-const init = () => {
-  Assets.init()
-  initializeLayout(DisplayObject.prototype, Container.prototype);
-  gsap.registerPlugin(PixiPlugin);
-  PixiPlugin.registerPIXI({
-    DisplayObject: DisplayObject,
-    Graphics: Graphics,
-  })
-}
-
-init();
+BaseView.registerPIXI(PIXI, gsap);
 
 export default class PixiModule extends Module {
   constructor() {

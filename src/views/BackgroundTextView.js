@@ -1,19 +1,11 @@
 import BaseView from './BaseView.js';
 import TextView from './TextView.js';
-import { Graphics } from '@pixi/graphics';
 import { GlowFilter } from '@pixi/filter-glow';
-import { gsap } from 'gsap';
 
 export default class BackgroundTextView extends BaseView {
   async initialize(text) {
     this._text = text;
-
-    const width = BaseView.baseSize().width;
     this.background = new BaseView();
-    const circle = new Graphics();
-    circle.beginFill('#606060', 1)
-    circle.drawCircle(width / 2, 0, 30);
-    circle.endFill();
 
     const glowFilter = new GlowFilter({
       distance: 15,
@@ -23,7 +15,6 @@ export default class BackgroundTextView extends BaseView {
       quality: 0.5,
     });
 
-    this.background.addChild(circle);
     this.background.setLayout({
       position: 'absolute',
       top: 0,
@@ -50,18 +41,11 @@ export default class BackgroundTextView extends BaseView {
     this.addChild(this.background, this.textView);
     this.background.filters = [glowFilter]
     this.background.dither()
-
-    gsap.to(circle, {
-      pixi: { y: 50, fillColor: "hsl(+=0, -=100%, +=100%)" }, 
-        duration: 2 
-      }
-    );
   }
 
-  set({image, text, options}) {
-    this.image = image;
-    this.text = text;
-    this.options = options;
+  set text(text) {
+    this._text = text;
+    this.textView.text = text;
   }
 
 }

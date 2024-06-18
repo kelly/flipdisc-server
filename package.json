@@ -18,7 +18,7 @@
     "@pixi/filter-dot": "^5.1.1",
     "@pixi/filter-glow": "^5.2.1",
     "@pixi/node": "^7.3.0",
-    "flipdisc": "^0.0.6",
+    "flipdisc": "^0.0.7",
     "glslify": "^7.1.1",
     "gsap": "^3.12.5",
     "hono": "^4.2.1",
