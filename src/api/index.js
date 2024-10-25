@@ -44,6 +44,8 @@ const API = {
   deleteQueueItem
 }
 
+// web routes
+
 const configureRoutes = (app) => {
   app.get('/api/playing', API.getPlaying)
   app.get('/api/display', API.getDisplay)
@@ -66,4 +68,17 @@ const configureRoutes = (app) => {
   app.delete('/api/queue/:id', API.deleteQueueItem)
 }
 
-export { API, configureRoutes}
+// mqtt 
+
+const topics = [
+  'play/#',
+  'playing/pause',
+  'playing/resume',
+  'playing/toggle',
+  'add/#',
+  'queue/sort',
+  'queue/next',
+  'queue/previous',
+]
+
+export { API, configureRoutes, topics }

@@ -1,6 +1,6 @@
 {
   "name": "flipdisc-server",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -23,6 +23,7 @@
     "gsap": "^3.12.5",
     "hono": "^4.2.1",
     "matter-js": "^0.19.0",
+    "mqtt": "^5.10.1",
     "node-canvas-webgl": "^0.3.0",
     "pino": "^9.1.0",
     "pino-pretty": "^11.1.0",
@@ -31,7 +32,7 @@
     "raf": "^3.4.1",
     "three": "^0.162.0",
     "workerpool": "^9.1.1",
-    "zeromq": "^6.0.0-beta.19",
-    "ws": "^8.17.0"
+    "ws": "^8.17.0",
+    "zeromq": "^6.0.0-beta.19"
   }
 }
