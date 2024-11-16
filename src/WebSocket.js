@@ -6,7 +6,7 @@ let wss
 let socket
 
 const send = (buffer) => {
-  if (!socket || socket.readyState !== WebSocket.OPEN) return
+  if (!isClientConnected()) return
 
   socket.send(buffer, { binary: true })
 }
@@ -23,8 +23,6 @@ const receive = (message) => {
 }
 
 const update = (imageData) => {
-  if (!socket || socket.readyState !== WebSocket.OPEN) return
-
   const manager = SceneManager.sharedInstance();
   const payload = new LiveSceneMessage().encode(imageData, manager.playing.info)
   if (payload) send(payload)
@@ -50,6 +48,9 @@ const startWebsocket = (port = 7071) => {
   });
 }
 
+const isClientConnected = () => {
+  return socket && socket.readyState === WebSocket.OPEN
+}
 
 export {
   startWebsocket
