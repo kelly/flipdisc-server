@@ -13,6 +13,7 @@ $ pip install pyzmq opencv-python mediapipe
 $ npm install flipdisc-server
 ```
 
+
 ### Start Server
 
 ```js
@@ -26,6 +27,11 @@ const server = createServer({
 // add your scenes to ./scene
 
 ```
+
+### Getting Started Project
+
+[https://github.com/kelly/flipdisc-example](https://github.com/kelly/flipdisc-example)
+
 
 ### Simple Scene 
 
