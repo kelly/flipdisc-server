@@ -6,6 +6,8 @@ let wss
 let socket
 
 const send = (buffer) => {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return
+
   socket.send(buffer, { binary: true })
 }
 
@@ -21,6 +23,8 @@ const receive = (message) => {
 }
 
 const update = (imageData) => {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return
+
   const manager = SceneManager.sharedInstance();
   const payload = new LiveSceneMessage().encode(imageData, manager.playing.info)
   if (payload) send(payload)
