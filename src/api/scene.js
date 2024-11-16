@@ -8,12 +8,13 @@ const getScenes = async (c) => {
  
 const getSceneByID = async (c) => {
   const manager = SceneManager.sharedInstance();
-  if (!manager.scenes[c.params.id]) {
+  const id = c.req.param().id
+  if (!manager.scenes[id]) {
     return c.notFound()
   } else {
-    return c.json(manager.scenes[c.params.id])
+    return c.json(manager.scenes[id])
   }
- }
+}
 
 export {
   getSceneByID,
