@@ -24,7 +24,7 @@
     "hono": "^4.2.1",
     "matter-js": "^0.19.0",
     "mqtt": "^5.10.1",
-    "node-canvas-webgl": "^0.3.0",
+    "node-canvas-webgl": "github:kelly/node-canvas-webgl",
     "pino": "^9.1.0",
     "pino-pretty": "^11.1.0",
     "pixi-flex-layout": "github:kelly/node-pixi-flex-layout",
