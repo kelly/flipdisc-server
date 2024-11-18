@@ -246,3 +246,11 @@ Moves to the previous item in the queue.
 DELETE /api/queue/:id
 Deletes an item from the queue by ID.
 ```
+
+### Headless
+
+You may need to use the command `xvfb-run` to enable a virtual frame buffer. 
+
+```bash
+xvfb-run node app.js
+```
