@@ -23,11 +23,13 @@ class Scene extends EventEmitter {
     this.canvas = createCanvas(width, height);
     this.modules = [];
     this.loops = [];
+    this.isLoaded = false;
   }
 
   async load() {
     const promise = await Promise.all(this.modules.map((m) => m.load()));
     this.emit('loaded');
+    this.isLoaded = true;
     return promise;
   }
 

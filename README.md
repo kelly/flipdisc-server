@@ -3,8 +3,8 @@
 A canvas rendering REST server for flipdisc displays.
 
 - [Website](https://flipdisc.io/)
-- [Github](http://www.github.com/kelly/flipserver)
-- [NPM](https://www.npmjs.com/package/flipserver)
+- [Github](http://www.github.com/kelly/flipdisc-server)
+- [NPM](https://www.npmjs.com/package/flipdisc-server)
 
 ### Install
 
