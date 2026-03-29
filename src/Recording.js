@@ -1,5 +1,6 @@
-import fs from 'fs';
+import { writeFile } from 'fs/promises';
 import { compressImageData } from '../utils/index.js';
+import logger from './Logger.js';
 
 export default class Recording {
   constructor() {
@@ -55,10 +56,12 @@ export default class Recording {
     return this.recordings.find(rec => rec.id === recordingId);
   }
 
-  save() {
-    const json = JSON.stringify(this.recordings);
-    fs.writeFile(this.filename, json, 'utf8', (err) => {
-      if (err) console.error('An error occurred while writing JSON to file:', err);
-    });
+  async save() {
+    try {
+      const json = JSON.stringify(this.recordings);
+      await writeFile(this.filename, json, 'utf8');
+    } catch (err) {
+      logger.error(`Failed to save recording: ${err.message}`);
+    }
   }
 }

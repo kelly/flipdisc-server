@@ -7,12 +7,13 @@ import atexit
 import mediapipe as mp
 import platform
 import signal
+import sys
 from mediapipe.tasks.python import vision
 # https://github.com/lavindude/GestureController/blob/b36881ee8509cb5294f9664fef86bc83e7d3d3d9/main.py#L39
 # Constants
 SOCKET_PATH = 'ipc:///tmp/gesture-data'
 LANDMARK_LABELS = [
-  'wrist'
+  'wrist',
   'thumb_cmc',
   'thumb_mcp',
   'thumb_ip',
@@ -39,7 +40,7 @@ LANDMARK_LABELS = [
 def parse_arguments():
   parser = argparse.ArgumentParser(description='Process camera frames with MediaPipe PoseLandmarker.')
   parser.add_argument('--device', type=str, default='/dev/video0', help='Camera port (default: /dev/video0)')
-  parser.add_argument('--port', type=int, default=0, help='Camera port (default: 0')
+  parser.add_argument('--port', type=int, default=0, help='Camera port (default: 0)')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
   parser.add_argument('--hands', type=int, default=1, help='Number of hands to detect (default: 1)')
@@ -48,9 +49,15 @@ def parse_arguments():
 
 # Cleanup function
 def cleanup():
-  socket.close()
-  context.term()
-  cam.release()
+  try:
+    if 'socket' in globals() and socket:
+      socket.close()
+    if 'context' in globals() and context:
+      context.term()
+    if 'cam' in globals() and cam:
+      cam.release()
+  except Exception:
+    pass
 
 def to_landmark_dict(landmarks):
   landmark_dict = {}
@@ -86,10 +93,13 @@ def frame_callback(result: mp.tasks.vision.GestureRecognizerResult, output_image
         gestures.append(gesture[0].category_name)
 
   send(gestures, landmarks)
-    
+
 # Capture frame
 def capture():
-  ret, photo = cam.read() 
+  ret, photo = cam.read()
+  if not ret or photo is None:
+    return
+
   frame_timestamp_ms = int(time.time() * 1000.0)
   photo = cv2.flip(photo, 1)
   image_format = mp.ImageFormat.SRGBA if platform.system() == 'Darwin' else mp.ImageFormat.SRGB
@@ -107,7 +117,7 @@ def main():
   global cam, width, height, socket, context, detector
   width = args.width
   height = args.height
-  cam = cv2.VideoCapture(args.port) 
+  cam = cv2.VideoCapture(args.port)
 
   # Initialize ZeroMQ socket
   context = zmq.Context()
@@ -131,7 +141,9 @@ def main():
   try:
     while cam.isOpened():
       capture()
+      time.sleep(0.001)
   except Exception as e:
+    print(f"Error in gesture capture loop: {e}", file=sys.stderr)
     cleanup()
 
 if __name__ == '__main__':

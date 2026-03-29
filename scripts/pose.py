@@ -7,6 +7,7 @@ import atexit
 import mediapipe as mp
 import platform
 import signal
+import sys
 from mediapipe.tasks.python import vision
 
 # https://github.com/lavindude/GestureController/blob/b36881ee8509cb5294f9664fef86bc83e7d3d3d9/main.py#L39
@@ -55,7 +56,7 @@ LANDMARK_LABELS = [
 def parse_arguments():
   parser = argparse.ArgumentParser(description='Process camera frames with MediaPipe PoseLandmarker.')
   parser.add_argument('--device', type=str, default='/dev/video0', help='Camera port (default: /dev/video0)')
-  parser.add_argument('--port', type=int, default=0, help='Camera port (default: 0')
+  parser.add_argument('--port', type=int, default=0, help='Camera port (default: 0)')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
   parser.add_argument('--model', type=str, default='./resources/models/pose_landmarker_full.task', help='Model file path (default: ./resources/models/pose_landmarker_lite.task)')
@@ -63,14 +64,20 @@ def parse_arguments():
 
 # Cleanup function
 def cleanup():
-  socket.close()
-  context.term()
-  cam.release()
+  try:
+    if 'socket' in globals() and socket:
+      socket.close()
+    if 'context' in globals() and context:
+      context.term()
+    if 'cam' in globals() and cam:
+      cam.release()
+  except Exception:
+    pass
 
 def to_landmark_dict(landmarks):
   landmark_dict = {}
   for idx, landmark in enumerate(landmarks):
-    label = LANDMARK_LABELS[idx]
+    label = LANDMARK_LABELS[idx] if idx < len(LANDMARK_LABELS) else 'unknown'
     landmark_dict[label] = {
       'x': landmark.x,
       'y': landmark.y,
@@ -85,7 +92,7 @@ def array_to_image_data(array):
   array = np.stack([array]*4, axis=-1)
   array[:, :, 3] = 255
   image_data = array.flatten()
-  
+
   return image_data
 
 # Convert image to ImageData format
@@ -99,7 +106,7 @@ def mask_to_image_data(mask_view, output_image):
       output_image = np.concatenate([output_image, np.ones((*output_image.shape[:-1], 1), dtype=output_image.dtype) * 255], axis=-1)
   elif output_image.shape[-1] != 4:  # Not RGBA or RGB
       raise ValueError("Input image must be in RGBA or RGB format")
-  
+
   return output_image.flatten()
 
 # Resize image and send
@@ -112,20 +119,28 @@ def send(image, landmarks=None):
 # Frame callback function
 def frame_callback(result, output_image, timestamp_ms):
   mask = result.segmentation_masks[0] if result.segmentation_masks else None
-  if mask:
-    mask_view = cv2.resize(mask.numpy_view(), (width, height))
-    output_image = cv2.resize(output_image.numpy_view(), (width, height))
-    image = mask_to_image_data(mask_view, output_image) if isinstance(mask_view[0][0], np.float32) else array_to_image_data(mask_view)
-    landmarks = to_landmark_dict(result.pose_landmarks[0]) 
-    send(image, landmarks)
+  if not mask:
+    return
+
+  if not result.pose_landmarks:
+    return
+
+  mask_view = cv2.resize(mask.numpy_view(), (width, height))
+  output_image = cv2.resize(output_image.numpy_view(), (width, height))
+  image = mask_to_image_data(mask_view, output_image) if isinstance(mask_view[0][0], np.float32) else array_to_image_data(mask_view)
+  landmarks = to_landmark_dict(result.pose_landmarks[0])
+  send(image, landmarks)
 
 # Capture frame
 def capture():
-  ret, photo = cam.read() 
+  ret, photo = cam.read()
+  if not ret or photo is None:
+    return
+
   frame_timestamp_ms = int(time.time() * 1000.0)
   photo = cv2.flip(photo, 1)
   image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(photo, cv2.COLOR_BGR2RGB))
-  result = detector.detect_async(image, frame_timestamp_ms)
+  detector.detect_async(image, frame_timestamp_ms)
 
 def signal_handler(sig, frame):
   cleanup()
@@ -137,7 +152,7 @@ def main():
   global cam, width, height, socket, context, detector
   width = args.width
   height = args.height
-  cam = cv2.VideoCapture(args.port) 
+  cam = cv2.VideoCapture(args.port)
 
   # Initialize ZeroMQ socket
   context = zmq.Context()
@@ -162,7 +177,9 @@ def main():
   try:
     while cam.isOpened():
       capture()
+      time.sleep(0.001)
   except Exception as e:
+    print(f"Error in pose capture loop: {e}", file=sys.stderr)
     cleanup()
 
 if __name__ == '__main__':

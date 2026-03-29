@@ -34,6 +34,8 @@ export default class UserInputModule extends Module {
     const last = this.touches[this.touches.length - 1]
     if (!last) return
     const lastPoint = last.point
+    if (lastPoint[0] === point[0] && lastPoint[1] === point[1]) return
+
     const colDiff = point[0] - lastPoint[0]
     const rowDiff = point[1] - lastPoint[1]
 
@@ -42,11 +44,11 @@ export default class UserInputModule extends Module {
 
     let col = lastPoint[0]
     let row = lastPoint[1]
+    const maxSteps = Math.max(Math.abs(colDiff), Math.abs(rowDiff))
 
-    while (col !== point[0] || row !== point[1]) {
+    for (let i = 0; i < maxSteps; i++) {
       if (col !== point[0]) col += colDirection
       if (row !== point[1]) row += rowDirection
-
 
       this.touches.push({
         point: [col, row],

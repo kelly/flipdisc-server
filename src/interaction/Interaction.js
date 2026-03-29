@@ -9,6 +9,7 @@ export default class InteractionEmitter extends EventEmitter {
     super();
     this.maxRestarts = 5;
     this.script = script;
+    this._onProcessExit = null;
   }
 
   load() {
@@ -20,21 +21,28 @@ export default class InteractionEmitter extends EventEmitter {
     this.isDestroying = true;
     this.removeAllListeners();
     this._destroyProcess();
-    process.removeAllListeners()
+    this._removeProcessExitHandler();
+  }
+
+  _removeProcessExitHandler() {
+    if (this._onProcessExit) {
+      process.removeListener('exit', this._onProcessExit);
+      this._onProcessExit = null;
+    }
   }
 
   _run(script) {
-    process.removeAllListeners()
-  
+    this._removeProcessExitHandler();
+
     if (!fs.existsSync(script.file) && script.file) {
       throw new Error('Script file does not exist');
     }
 
-    const args =  (script.file) ? [script.file, ...script.args] : script.args;
+    const args = (script.file) ? [script.file, ...script.args] : script.args;
 
     this.process = spawn(script.command || 'python3', args);
     this.process
-      .once('error', (err) => {
+      .on('error', (err) => {
         logger.error(`Failed to start child process: ${err}`);
       })
       .once('exit', (code) => {
@@ -43,8 +51,9 @@ export default class InteractionEmitter extends EventEmitter {
           this._run(script);
         }
       });
-    
-    process.once('exit', () => this.process.kill());
+
+    this._onProcessExit = () => this.process?.kill();
+    process.once('exit', this._onProcessExit);
   }
 
   async _subscribe(channel) {
@@ -61,10 +70,11 @@ export default class InteractionEmitter extends EventEmitter {
       this.emit('update', json)
     }
   }
-  
+
   _destroyProcess() {
+    if (!this.process) return;
     this.process.removeAllListeners();
-    this.process?.kill();
+    this.process.kill();
     this.process = null;
   }
 }

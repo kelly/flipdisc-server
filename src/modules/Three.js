@@ -31,7 +31,7 @@ export default class ThreeModule extends Module {
     this.canvas = canvas;
     this.options = { ...defaultOptions, ...options };
 
-    this.load()
+    this.ready = this.load()
   }
 
   async add(view) {

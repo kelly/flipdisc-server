@@ -1,6 +1,7 @@
 import SceneImporter from './Importer.js';
 import ScenePlaying from './Playing.js';
 import SceneQueue from './Queue.js';
+import logger from './Logger.js';
 
 let manager;
 
@@ -32,6 +33,10 @@ export default class SceneManager {
 
   async play(item) {
     item.sceneObj = this.getScene(item.id)
+    if (!item.sceneObj) {
+      logger.warn(`Scene not found for id: ${item.id}`)
+      return
+    }
     item.duration = this._configureDuration(item)
     return this.playing.set(item)
   }
@@ -81,9 +86,12 @@ export default class SceneManager {
   }
 
   _registerEvents() {
-    this.playing.on('finished', async () => {
-      if (this.options.autoPlay && this.queue.hasItems) 
-        await this.play(this.queue.next())
+    this.playing.on('finished', () => {
+      if (this.options.autoPlay && this.queue.hasItems) {
+        this.play(this.queue.next()).catch(err => {
+          logger.error(`Error auto-playing next scene: ${err.message}`)
+        })
+      }
     })
   }
 

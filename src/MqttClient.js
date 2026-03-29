@@ -2,6 +2,7 @@ import mqtt from 'mqtt';
 import { topics } from './api/index.js';
 import SceneManager from './SceneManager.js';
 import SceneTaskManager from './TaskManager.js';
+import logger from './Logger.js';
 
 const PLAY_PREFIX = 'play';
 const ADD_PREFIX = 'add';
@@ -64,8 +65,13 @@ export default async function createMqttClient(url, options = {}) {
       }
 
     } catch (error) {
-      console.error(`Error handling topic ${topic}:`, error);
+      logger.error(`Error handling topic ${topic}: ${error.message}`);
     }
+  });
+
+  process.once('exit', () => {
+    tasks.destroy();
+    client.end();
   });
 
   return client;

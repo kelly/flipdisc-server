@@ -50,16 +50,21 @@ export default class Playing extends EventEmitter {
       return await scene(props)
     } catch (e) {
       logger.error(`Error setting up scene: ${e.message}`)
+      this.schema = null;
+      this.props = null;
+      this.duration = undefined;
       this.emit('finished')
     }
   }
 
   subscribe() {
-    this.scene.on('update', (data) => {
+    if (!this.scene) return;
+    this._onSceneUpdate = (data) => {
       this.emit('update', data);
       Display.sharedInstance().send(data);
       this.recorder?.record(this.id, data);
-    });
+    };
+    this.scene.on('update', this._onSceneUpdate);
   }
 
   playFor(duration) {
@@ -93,6 +98,10 @@ export default class Playing extends EventEmitter {
   _cleanupScene() {
     this.recorder?.save()
     this.renderer.clear();
+    if (this.scene && this._onSceneUpdate) {
+      this.scene.removeListener('update', this._onSceneUpdate);
+      this._onSceneUpdate = null;
+    }
     this.scene?.destroy();
     this.scene = null;
   }

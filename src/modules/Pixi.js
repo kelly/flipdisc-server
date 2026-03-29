@@ -12,6 +12,7 @@ export default class PixiModule extends Module {
   constructor() {
     super();
     this.textView = null;
+    this._destroyed = false;
   }
 
   async loadAsset(url) {
@@ -19,6 +20,8 @@ export default class PixiModule extends Module {
   }
 
   get app() {
+    if (this._destroyed) return this._app;
+
     const { width, height } = Display.size()
 
     if (!this._app) {
@@ -27,7 +30,7 @@ export default class PixiModule extends Module {
         height: height,
         transparent: false,
         antialias: false,
-        resolution: 1        
+        resolution: 1
       });
       layoutSetRenderer(this._app.renderer);
     }
@@ -65,14 +68,20 @@ export default class PixiModule extends Module {
   }
 
   async destroy() {
-    this.getAllChildren().then(() => {
+    this._destroyed = true;
+    try {
+      await this.getAllChildren();
       removeLayoutRenderer(this.renderer);
       this.destroyAllChildren()
       PixiModule.removeAllTextures();
       Assets.reset();
       this.textView = null;
-      this.app.destroy();
-    })
+      this._app.destroy();
+    } catch (e) {
+      this.textView = null;
+      try { this._app?.destroy(); } catch (_) {}
+    }
+    this._app = null;
   }
 
   render() {

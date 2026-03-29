@@ -7,6 +7,7 @@ import atexit
 import mediapipe as mp
 import platform
 import signal
+import sys
 from mediapipe.tasks.python import vision
 
 # https://github.com/lavindude/GestureController/blob/b36881ee8509cb5294f9664fef86bc83e7d3d3d9/main.py#L39
@@ -19,7 +20,7 @@ SOCKET_PATH = 'ipc:///tmp/segmentation-data'
 def parse_arguments():
   parser = argparse.ArgumentParser(description='Process camera frames with MediaPipe PoseLandmarker.')
   parser.add_argument('--device', type=str, default='/dev/video0', help='Camera port (default: /dev/video0)')
-  parser.add_argument('--port', type=int, default=0, help='Camera port (default: 0')
+  parser.add_argument('--port', type=int, default=0, help='Camera port (default: 0)')
   parser.add_argument('--width', type=int, default=28, help='Camera frame width (default: 28)')
   parser.add_argument('--height', type=int, default=14, help='Camera frame height (default: 14)')
   parser.add_argument('--model', type=str, default='./resources/models/selfie_segmenter_landscape.tflite', help='Model file path (default: ./resources/models/selfie_segmenter_landscape.tflite)')
@@ -27,9 +28,15 @@ def parse_arguments():
 
 # Cleanup function
 def cleanup():
-  socket.close()
-  context.term()
-  cam.release()
+  try:
+    if 'socket' in globals() and socket:
+      socket.close()
+    if 'context' in globals() and context:
+      context.term()
+    if 'cam' in globals() and cam:
+      cam.release()
+  except Exception:
+    pass
 
 
 # Convert image to ImageData format
@@ -38,13 +45,14 @@ def to_image_data(numpy_image):
       numpy_image = np.concatenate([numpy_image, np.ones((*numpy_image.shape[:-1], 1), dtype=numpy_image.dtype) * 255], axis=-1)
   elif numpy_image.shape[-1] != 4:  # Not RGBA or RGB
       raise ValueError("Input image must be in RGBA or RGB format")
-  return numpy_image.flatten().tolist()
+  return numpy_image.flatten()
 
 # Resize image and send
 def resize_and_send(image):
   img = cv2.resize(image, (width, height))
+  image_data = to_image_data(img)
   socket.send_json({
-    'image': to_image_data(img)
+    'image': image_data.tolist()
   })
 
 # Frame callback function
@@ -59,12 +67,15 @@ def frame_callback(result, output_image, timestamp_ms):
 
 # Capture frame
 def capture():
-  ret, photo = cam.read() 
+  ret, photo = cam.read()
+  if not ret or photo is None:
+    return
+
   frame_timestamp_ms = int(time.time() * 1000.0)
   image_format = mp.ImageFormat.SRGBA if platform.system() == 'Darwin' else mp.ImageFormat.SRGB
   color_format = cv2.COLOR_BGR2RGBA if platform.system() == 'Darwin' else cv2.COLOR_BGR2RGB
   image = mp.Image(image_format=image_format, data=cv2.cvtColor(photo, color_format))
-  result = segmenter.segment_async(image, frame_timestamp_ms)
+  segmenter.segment_async(image, frame_timestamp_ms)
 
 def signal_handler(sig, frame):
   cleanup()
@@ -76,7 +87,7 @@ def main():
   global cam, width, height, socket, context, segmenter
   width = args.width
   height = args.height
-  cam = cv2.VideoCapture(args.port) 
+  cam = cv2.VideoCapture(args.port)
 
   # Initialize ZeroMQ socket
   context = zmq.Context()
@@ -100,7 +111,9 @@ def main():
   try:
     while cam.isOpened():
       capture()
+      time.sleep(0.001)
   except Exception as e:
+    print(f"Error in segmentation capture loop: {e}", file=sys.stderr)
     cleanup()
 
 if __name__ == '__main__':

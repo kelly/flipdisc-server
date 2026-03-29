@@ -62,7 +62,7 @@ export default class MotionEmitter extends InteractionEmitter {
   }
 
   _cleanHistory() {
-    if (this.history.length > 10) {
+    while (this.history.length > 10) {
       this.history.shift()
     }
   }

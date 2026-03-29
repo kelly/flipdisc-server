@@ -31,13 +31,14 @@ export default class SceneQueue  {
 
   update(item) {
     const idx = this.items.findIndex(i => i.id === item.id)
-    if (idx !== -1) 
+    if (idx !== -1) {
       item.props = {...this.items[idx].props, ...item.props}
       this.items[idx] = item
+    }
   }
 
   sort(ids) {
-    this.items = ids.map(id => this.getItem({ id }))
+    this.items = ids.map(id => this.getItem({ id })).filter(Boolean)
   }
 
   next() {

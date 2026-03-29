@@ -26,14 +26,18 @@ export default class Renderer {
     this.clock.elapsedTime = this.elapsedTime || 0;
     this._isPlaying = true;
     this._animate();
-    
+
   }
 
   stop() {
     if (!this.isPlaying) return;
-    
+
+    this._isPlaying = false;
     this.clock.stop();
-    raf.cancel(this.animationId);
+    if (this.animationId) {
+      raf.cancel(this.animationId);
+      this.animationId = null;
+    }
   }
 
   _setDefaults() {
@@ -41,6 +45,7 @@ export default class Renderer {
     this.onFinished = null;
     this.duration = 0;
     this.elapsedTime = 0;
+    this.animationId = null;
     this.i = 0;
   }
 
@@ -50,17 +55,22 @@ export default class Renderer {
   }
 
   _animate = () => {
+    if (!this._isPlaying || !this.animationFunction) return;
+
     this.animationFunction(this.i++, this.clock);
     this.elapsedTime = this.clock.getElapsedTime()
     this._clearIfFinished();
 
-    this.animationId = raf(this._animate);
+    if (this._isPlaying) {
+      this.animationId = raf(this._animate);
+    }
   };
 
   _clearIfFinished() {
     if (this.onFinished && this.elapsedTime >= this.duration) {
-      this.onFinished();
+      const cb = this.onFinished;
       this.clear();
+      cb();
     }
   }
 
@@ -72,4 +82,4 @@ export default class Renderer {
     return this.onFinished ? Math.round(this.duration - this.elapsedTime) : 0;
   }
 
-} 
+}

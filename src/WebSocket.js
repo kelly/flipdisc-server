@@ -2,13 +2,15 @@ import WebSocket, { WebSocketServer } from 'ws';
 import SceneManager from './SceneManager.js';
 import { LiveSceneMessage, UserInputMessage } from './Message.js';
 
-let wss 
-let socket
+let wss
+const clients = new Set()
 
 const send = (buffer) => {
-  if (!isClientConnected()) return
-
-  socket.send(buffer, { binary: true })
+  for (const ws of clients) {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(buffer, { binary: true })
+    }
+  }
 }
 
 const receive = (message) => {
@@ -17,9 +19,10 @@ const receive = (message) => {
 
   if (data) {
     const scene = manager.playing?.scene
+    if (!scene) return
     scene.user.add(data)
     scene.render()
-  }  
+  }
 }
 
 const update = (imageData) => {
@@ -30,26 +33,37 @@ const update = (imageData) => {
 
 const startUpdates = () => {
   const manager = SceneManager.sharedInstance();
-  manager.playing.removeListener('update', send) // just in case, remove any existing listeners
+  manager.playing.removeListener('update', update)
   manager.playing.on('update', update)
 }
 
 const startWebsocket = (port = 7071) => {
   wss = new WebSocketServer({ port: port, binaryType: 'arraybuffer'});
   wss.on('connection', (ws) => {
-    socket = ws;
+    clients.add(ws);
+
     ws.on('message', receive);
-    startUpdates();
+    ws.on('close', () => {
+      clients.delete(ws);
+    });
+    ws.on('error', () => {
+      clients.delete(ws);
+    });
+
+    if (clients.size === 1) {
+      startUpdates();
+    }
   })
-  
+
   wss.on('close', () => {
+    clients.clear();
     const manager = SceneManager.sharedInstance();
-    manager.playing.removeListener('update', send)
+    manager.playing.removeListener('update', update)
   });
 }
 
 const isClientConnected = () => {
-  return socket && socket.readyState === WebSocket.OPEN
+  return clients.size > 0
 }
 
 export {

@@ -2,7 +2,12 @@ import SceneManager from '../SceneManager.js'
 
 const postPlaying = async (c) => {
   const manager = SceneManager.sharedInstance();
-  const data  = await c.req.json()
+  let data;
+  try {
+    data = await c.req.json()
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON' }, 400)
+  }
 
   if (data?.id === undefined || data?.id >= manager.scenes.length) {
     return c.notFound()

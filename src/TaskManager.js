@@ -34,29 +34,34 @@ export default class SceneTaskManager {
   }
 
   async exec(task) {
-    const result = await this.pool.exec(task.func)
-    if (!result) return;
-    
-    const { props, duration, wait = true } = result;
-    const item = { id: task.id, props, duration };
+    try {
+      const result = await this.pool.exec(task.func)
+      if (!result) return;
 
-    if (sceneManager.playing.id === task.id) return;
-    (wait) ? sceneManager.queue.add(item) : sceneManager.play(item)
+      const { props, duration, wait = true } = result;
+      const item = { id: task.id, props, duration };
+
+      if (sceneManager.playing.id === task.id) return;
+      (wait) ? sceneManager.queue.add(item) : sceneManager.play(item)
+    } catch (e) {
+      logger.warn(`Error executing task id: ${task.id} - ${e.message}`)
+    }
   }
 
   scheduleTask(task) {
     const interval = later.parse.text(task.frequency);
     task.timer = later.setInterval(() => {
-      try {
-        this.exec(task)
-      } catch (e) {
-        logger.warn(`error executing task id: ${task.id}`)
-      }
+      this.exec(task)
     }, interval);
   }
 
   cancelTask(task) {
-    clearInterval(task.timer);
+    task.timer?.clear();
   }
 
+  destroy() {
+    this.tasks.forEach(task => this.cancelTask(task));
+    this.tasks = [];
+    this.pool.terminate();
+  }
 }

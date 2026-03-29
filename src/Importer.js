@@ -43,7 +43,11 @@ export default class SceneImporter {
   }
 
   async loadOne(filename, hasChanged = false) {
-    const scene = this.imports.find(s => s.filename === filename);
+    const scene = this.imports?.find(s => s.filename === filename);
+    if (!scene) {
+      logger.warn(`Scene import not found for ${filename}`);
+      return null;
+    }
     logger.info(`loading scene ${scene.filename}`)
     return scene.load(hasChanged);
   }
@@ -56,14 +60,18 @@ export default class SceneImporter {
   watchDir() {
     this.reloader = fs.watch(this.dir, async (eventType, filename) => {
       if (eventType === 'change') {
-        const scene = await this.loadOne(filename, true);
-        SceneManager.sharedInstance().updateScene(scene);
+        try {
+          const scene = await this.loadOne(filename, true);
+          if (scene) SceneManager.sharedInstance().updateScene(scene);
+        } catch (e) {
+          logger.error(`Error reloading scene ${filename}: ${e.message}`);
+        }
       }
     });
   }
 
   destroy() {
-    this.reloader.close();
+    this.reloader?.close();
   }
 
   get dir() {

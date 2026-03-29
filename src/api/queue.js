@@ -13,14 +13,24 @@ const getQueueSettings = async (c) => {
 
 const postQueueSettings = async (c) => {
   const manager = SceneManager.sharedInstance();
-  const data = await c.req.json()
+  let data;
+  try {
+    data = await c.req.json()
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON' }, 400)
+  }
   manager.queue.settings = data
   return c.json(manager.queue.settings)
 }
 
 const postQueue = async (c) => {
   const manager = SceneManager.sharedInstance();
-  const data = await c.req.json()
+  let data;
+  try {
+    data = await c.req.json()
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON' }, 400)
+  }
   if (data.id === undefined || data.id >= manager.scenes.length) {
     return c.notFound()
   }
@@ -44,7 +54,12 @@ const postQueueNext = async (c) => {
 
 const postQueueSort = async (c) => {
   const manager = SceneManager.sharedInstance();
-  const data = await c.req.json()
+  let data;
+  try {
+    data = await c.req.json()
+  } catch (e) {
+    return c.json({ error: 'Invalid JSON' }, 400)
+  }
   manager.queue.sort(data)
   return c.json(manager.queue.itemsArray)
 }
